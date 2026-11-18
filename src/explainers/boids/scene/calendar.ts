@@ -2,6 +2,7 @@
 // one night (~14 s); three holidays per season. Day/night, season and holiday changes cross-fade.
 
 import type { Season, World } from '../world';
+import { callParksCrew } from '../people/parks';
 
 export interface HolidayDef {
   id: string;
@@ -123,7 +124,10 @@ export function updateFades(w: World, dt: number) {
   else if (w.prevSeason === 'winter' && w.meltT < 1) { w.meltT = Math.min(1, w.meltT + dt / 7000); w.puddle = 1.5; }
   else if (w.puddle > 0) w.puddle = Math.max(0, w.puddle - dt / 9000);
   const eid = ev(w).id;
-  if (w.evId !== eid) { w.prevEvId = w.evId; w.evId = eid; w.evFade = w.prevEvId ? 0 : 1; }
+  if (w.evId !== eid) {
+    w.prevEvId = w.evId; w.evId = eid; w.evFade = w.prevEvId ? 0 : 1;
+    if (w.prevEvId) callParksCrew(w);
+  }
   if (w.evFade < 1) w.evFade = Math.min(1, w.evFade + dt / EVENT_FADE_MS);
   if (w.night) w.nightClock += dt;
   else { w.nightClock = 0; w.dropped = false; }

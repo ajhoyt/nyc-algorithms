@@ -6,6 +6,10 @@ import { W, type Actor, type ActorKind, type Actors, type Dot, type World } from
 import { openHours } from '../scene/calendar';
 import { drawPerson } from './draw';
 import { lookFor } from './crowd';
+import { raceOn } from './marathon';
+
+/** The bench sits on the lawn in front of the path; this is the sitters' y. */
+export const BENCH_Y = 171;
 
 function actor(kind: ActorKind, home: number, y: number): Actor {
   return { kind, home, x: -10, y, state: 'gone', dir: 1, ph: 0, look: null, t: 0, coins: 0, react: 0, cool: 0 };
@@ -15,7 +19,7 @@ export function makeActors(): Actors {
   return {
     fa: actor('frisbee', 52, 166), fb: actor('frisbee', 100, 166),
     ca: actor('catch', 258, 166), cb: actor('catch', 286, 166),
-    s1: actor('sit', 206, 163), s2: actor('sit', 210, 163),
+    s1: actor('sit', 206, BENCH_Y), s2: actor('sit', 210, BENCH_Y),
     busk: actor('busker', 188, 164),
     statue: actor('statue', 160, 162),
     mascot: actor('mascot', 22, 163),
@@ -27,6 +31,8 @@ export function makeActors(): Actors {
 /** Whether this actor wants to be in the park right now. */
 export function wants(w: World, a: Actor): boolean {
   const day = openHours(w), s = w.season ?? 'winter';
+  // Marathon day: the path belongs to the race. Only the bench sitters (off the path) stay.
+  if (raceOn(w) && a.kind !== 'sit') return false;
   switch (a.kind) {
     case 'frisbee': case 'crew': case 'statue': return day && s !== 'winter';
     case 'catch': case 'busker': case 'mascot': case 'chess': return day;

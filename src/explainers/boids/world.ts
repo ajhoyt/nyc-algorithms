@@ -2,6 +2,7 @@
 // it plays the role the component instance played in the design prototype.
 
 import { calm, type Wind } from './sim/wind';
+import type { Fan, Runner } from './people/marathon';
 
 export const W = 320;
 export const H = 180;
@@ -22,6 +23,8 @@ export interface Look {
   skin: string; hair: string; top: string; legs: string; kid: boolean; bib?: boolean;
   /** Carrying a little rainbow flag (Pride). */
   flag?: boolean;
+  /** Halloween costume id (see people/costumes.ts). */
+  costume?: string;
 }
 
 export interface Bird {
@@ -31,6 +34,10 @@ export interface Bird {
   /** Neighbours seen last step (falcon targets lonely birds). */
   nb: number;
   nvx: number; nvy: number; maxs: number;
+  /** Wander offset from current heading (radians). */
+  wan: number;
+  /** Steps left of a turn this bird decided on, and the direction it's turning toward. */
+  urge: number; urgeAng: number;
 }
 
 export interface Puff { x: number; y: number; vx: number; vy: number; life: number; c: string }
@@ -93,6 +100,11 @@ export type Fx =
 export interface Tour {
   state: 'gone' | 'walk' | 'stop'; cool: number; x: number; dir: number; t: number; ph?: number;
   stopX?: number; stopped?: boolean; guide?: Look; members?: Look[];
+}
+
+export type ParksJob = 'treeIn' | 'treeOut' | 'lamps';
+export interface ParksCrew {
+  x: number; y: number; job: ParksJob; jobs: ParksJob[]; step: string; lamp: number; t: number; ph: number; look: Look;
 }
 
 export interface Bridger { x: number; dir: number; v: number; ph: number; look: Look; partner: Look | null; pause: number; kiss?: boolean }
@@ -163,6 +175,14 @@ export interface World {
   evFade: number;
   /** Holiday whose colours the Empire State Building shows; locked from dusk until full daylight. */
   esbEvId: string | null;
+  /** Holiday decoration currently hung on each lamp post (changed by the Parks worker). */
+  lampDecor: (string | null)[];
+  parks: ParksCrew | null;
+  /** The Christmas tree: brought in, lit, chopped and hauled out by the Parks worker. */
+  xmasTree: 'unset' | 'gone' | 'carried' | 'up' | 'lit';
+  /** Marathon day (see people/marathon.ts). */
+  runners: Runner[];
+  fans: Fan[];
   nightClock: number;
   dropped: boolean;
   fireworks: Firework[];
@@ -184,7 +204,8 @@ export interface World {
   skaters: Skater[];
   challenger: Walker | null;
   proposing: Walker | null;
-  hintIdx: number;
+  /** Next tour fact per species. */
+  hintIdx: Partial<Record<Species, number>>;
   tourBub: { lines: string[]; until: number } | null;
 
   // --- speech bubbles
@@ -213,11 +234,11 @@ export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElemen
     timeLeft: 0, elapsed: 0, oneFor: 0, flocks: 0, wt: 0, wind: calm(),
     calSeason: 'winter', event: 0, night: false, autoClock: 0,
     season: null, prevSeason: null, seasonFade: 1, sceneKey: '', days: {}, nights: {}, sprCache: {}, sprites: [],
-    cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1, esbEvId: null,
+    cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1, esbEvId: null, lampDecor: [], parks: null, xmasTree: 'unset', runners: [], fans: [],
     nightClock: 0, dropped: false, fireworks: [], flakes: [], flakeEv: null, balloons: null, boats: null,
     walkers: [], fx: [], actors: null, board: [], tour: { state: 'gone', cool: 240, x: -30, dir: 1, t: 0 },
     discT: 0, ballT: 0, ball: { from: 0, t: 0, hold: 60, miss: false }, bridgers: [], skaters: [],
-    challenger: null, proposing: null, hintIdx: -1, tourBub: null,
+    challenger: null, proposing: null, hintIdx: {}, tourBub: null,
     bub: null, bubShow: false, nextBub: 0, bag: [], bagKey: '', lastLine: '',
     hawkSpr, falconSpr,
   };

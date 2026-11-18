@@ -6,8 +6,11 @@ import { DX, W, pick, type Look, type Role, type Walker, type World } from '../w
 import { coupleChance, crowd, dayPhase, ev, openHours } from '../scene/calendar';
 import { addSkater, launchBoat, stepSkaters } from '../scene/lake';
 import { makeActors, placeNow, stepActors, wants } from './performers';
+import { dressForHalloween } from './costumes';
 import { stepTour } from './tour';
 import { stepBridge } from './bridge';
+import { stepParks } from './parks';
+import { raceOn, stepMarathon } from './marathon';
 
 const SKINS = ['#f1c9a5', '#d9a07a', '#a86b4a', '#7a4a30', '#e8b48e'];
 const HAIRS = ['#2a1f1a', '#5a3a22', '#c9a050', '#1c1c1c', '#8a8a8a'];
@@ -28,11 +31,9 @@ export function lookFor(w: World, kid: boolean): Look {
   if (e === 'easter' && r < 0.5) L.hair = pick(['#f4b6c8', '#b58ae0', '#f5e26a', '#9fd6c0']);
   if (e === 'pride' && r < 0.7) L.top = pick(['#e0302a', '#f5a030', '#f5e26a', '#2e9e4b', '#1f5fa6', '#8a4fc0']);
   if (e === 'pride' && !kid && Math.random() < 0.35) L.flag = true;
-  if (e === 'halloween') {
-    if (r < 0.25) L.hair = L.skin = L.top = L.legs = '#f2f2f2'; // ghost
-    else if (r < 0.45) L.top = '#e3842f';
-    else if (r < 0.6) { L.hair = '#2a1f3a'; L.top = '#3a2a4a'; }
-  }
+  // Halloween: most adults and nearly all kids are in costume (classic and New York).
+  if (e === 'halloween' && Math.random() < (kid ? 0.9 : 0.6)) dressForHalloween(L);
+
   if (e === 'christmas' && r < 0.4) L.hair = '#e0302a';
   if (e === 'newyear' && r < 0.4) L.hair = '#f5c400';
   if (e === 'valentines' && r < 0.5) L.top = pick(['#e0302a', '#f08aa8', '#c42a5a']);
@@ -40,12 +41,11 @@ export function lookFor(w: World, kid: boolean): Look {
 }
 
 export function spawnWalker(w: World, anywhere: boolean) {
-  const e = ev(w).id, dp = dayPhase(w);
+  const dp = dayPhase(w);
   const couple = Math.random() < coupleChance(w);
   const dir = Math.random() < 0.5 ? 1 : -1;
-  const jog = !couple && dp >= 0 && Math.random() < (e === 'marathon' ? 0.65 : dp < 0.25 ? 0.55 : 0.15);
+  const jog = !couple && dp >= 0 && Math.random() < (dp < 0.25 ? 0.55 : 0.15);
   const look = lookFor(w, false);
-  if (jog && e === 'marathon') { look.bib = true; look.top = pick(['#e05a33', '#4fb3d9', '#f5c400', '#2e9e6b']); look.legs = '#1c1c1c'; }
   w.walkers.push({
     x: anywhere ? Math.random() * W : dir > 0 ? -8 : W + 8, y: 165 + Math.floor(Math.random() * 3), dir,
     v: jog ? 0.45 : 0.16 + Math.random() * 0.08, jog, ph: Math.random() * 4, look,
@@ -125,6 +125,8 @@ function stepWalker(w: World, wk: Walker, i: number, target: number): void {
       if (wk.y >= (wk.ty ?? 165)) { wk.y = wk.ty ?? 165; wk.state = 'walk'; }
       return;
     case 'walk': {
+      // Race starting: clear the path, briskly, toward the nearest edge.
+      if (raceOn(w) && !wk.role) { wk.dir = wk.x < W / 2 ? -1 : 1; wk.v = Math.max(wk.v, 0.5); }
       wk.x += wk.v * wk.dir; wk.ph += wk.v * 0.6;
       if (wk.role && Math.abs(wk.x - (DX - 1)) < 0.3) {
         const valid = wk.role.skate ? w.season === 'winter' : w.season !== 'winter' && openHours(w);
@@ -156,7 +158,7 @@ function stepWalker(w: World, wk: Walker, i: number, target: number): void {
       }
       if (wk.x > W + 10 || wk.x < -10) {
         w.walkers.splice(i, 1);
-        if (w.walkers.length <= target) spawnWalker(w, false);
+        if (target > 0 && w.walkers.length <= target) spawnWalker(w, false);
       }
       return;
     }
@@ -215,7 +217,9 @@ function stepFx(w: World) {
 
 export function stepPeople(w: World) {
   if (!w.actors) initPeople(w);
-  const target = crowd(w);
+  // On marathon day the path is cleared for the race.
+  const racing = raceOn(w);
+  const target = racing ? 0 : crowd(w);
   // New arrivals trickle in, faster when the park is well short of its crowd (e.g. NYE night).
   const deficit = target - w.walkers.filter((q) => !q.role).length;
   if (deficit > 0 && Math.random() < (deficit > 2 ? 0.02 : 0.006)) spawnWalker(w, false);
@@ -224,6 +228,8 @@ export function stepPeople(w: World) {
   stepTour(w);
   stepBridge(w);
   stepSkaters(w);
+  stepParks(w);
+  stepMarathon(w);
   for (let i = w.walkers.length - 1; i >= 0; i--) stepWalker(w, w.walkers[i], i, target);
   stepFx(w);
 }

@@ -1,10 +1,13 @@
 // Tiny people: 3×6 adults, 3×4 kids. Character comes from animation, not detail.
 
 import { dim, dotter, type Dot, type Look, type World } from '../world';
+import { drawCostume } from './costumes';
 import { drawSnowman } from '../scene/holidays';
 import { drawSkatersFront } from '../scene/lake';
-import { drawBusker, drawChess, drawCrew, drawMascot, drawStatue } from './performers';
+import { BENCH_Y, drawBusker, drawChess, drawCrew, drawMascot, drawStatue } from './performers';
 import { drawTour } from './tour';
+import { drawParks } from './parks';
+import { drawFan, drawRunner } from './marathon';
 import type { Actor, Walker } from '../world';
 
 export function drawPerson(w: World, x: number, y: number, look: Look, frame: number, sitting: boolean) {
@@ -14,19 +17,23 @@ export function drawPerson(w: World, x: number, y: number, look: Look, frame: nu
     px(look.hair, 1, 2); px(look.skin, 1, 3);
     px(look.top, 0, 4); px(look.top, 1, 4); px(look.top, 2, 4);
     if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
+    if (look.costume) drawCostume(look, px);
     return;
   }
   px(look.hair, 1, 0); px(look.skin, 1, 1);
   px(look.top, 0, 2); px(look.top, 1, 2); px(look.top, 2, 2); px(look.top, 1, 3);
-  if (sitting) { px(look.legs, 1, 4); px(look.legs, 2, 4); return; }
-  px(look.legs, 1, 4);
-  if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
+  if (sitting) { px(look.legs, 1, 4); px(look.legs, 2, 4); }
+  else {
+    px(look.legs, 1, 4);
+    if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
+  }
+  if (look.costume) drawCostume(look, px);
 }
 
 const PRIDE = ['#e0302a', '#f5a030', '#f5e26a', '#2e9e4b', '#1f5fa6', '#8a4fc0'];
 
 /** A person plus extras (marathon bib, Pride flag). */
-function drawPersonFull(w: World, x: number, y: number, look: Look, frame: number, sitting: boolean) {
+export function drawPersonFull(w: World, x: number, y: number, look: Look, frame: number, sitting: boolean) {
   drawPerson(w, x, y, look, frame, sitting);
   const ctx = w.ctx;
   if (look.bib) { ctx.fillStyle = dim(w, '#ffffff'); ctx.fillRect(x + 1, y + 2, 1, 1); }
@@ -81,7 +88,7 @@ function drawActor(w: World, p: Actor, dot: Dot) {
     case 'chess': return drawChess(w, p, dot);
   }
   const moving = p.state === 'arrive' || p.state === 'leave';
-  if (p.kind === 'sit' && !moving) { drawPerson(w, p.home, 163, p.look!, 0, true); return; }
+  if (p.kind === 'sit' && !moving) { drawPerson(w, p.home, p.y, p.look!, 0, true); return; }
   drawPerson(w, Math.round(p.x), p.y, p.look!, moving ? Math.floor(p.ph) % 2 : 0, false);
 }
 
@@ -162,15 +169,19 @@ export function drawPeople(w: World) {
   const dot = dotter(w);
   drawSkatersFront(w);
   drawSnowman(w, dot);
-  // Bench
-  for (let b = 0; b < 9; b++) { dot('#7a5a3a', 205 + b, 168); dot('#5a4028', 205 + b, 166); }
-  dot('#3a2a1a', 205, 169); dot('#3a2a1a', 205, 170); dot('#3a2a1a', 213, 169); dot('#3a2a1a', 213, 170);
+  // Bench, on the lawn in front of the path (sitters' y + 3 is the backrest, + 5 the seat)
+  const by = BENCH_Y;
+  for (let b = 0; b < 9; b++) { dot('#7a5a3a', 205 + b, by + 5); dot('#5a4028', 205 + b, by + 3); }
+  dot('#3a2a1a', 205, by + 6); dot('#3a2a1a', 205, by + 7); dot('#3a2a1a', 213, by + 6); dot('#3a2a1a', 213, by + 7);
 
   type Item = { y: number; draw: () => void };
   const list: Item[] = [];
   for (const a of Object.values(A) as Actor[]) if (a.state !== 'gone') list.push({ y: a.y, draw: () => drawActor(w, a, dot) });
   for (const p of w.walkers) if (p.state !== 'chess') list.push({ y: p.y, draw: () => drawWalker(w, p, dot) });
   if (w.tour.state !== 'gone') list.push({ y: 168, draw: () => drawTour(w, dot) });
+  if (w.parks) list.push({ y: w.parks.y, draw: () => drawParks(w, dot) });
+  for (const r of w.runners) list.push({ y: r.y, draw: () => drawRunner(w, r, dot) });
+  for (const f of w.fans) list.push({ y: f.y, draw: () => drawFan(w, f, dot) });
   list.sort((p, q) => p.y - q.y);
   for (const it of list) it.draw();
   drawGames(w, dot);

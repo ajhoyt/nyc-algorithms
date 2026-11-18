@@ -1,9 +1,10 @@
 // A walking tour: a guide in yellow with a flag, a few tourists (one kid). The tour stops once,
-// the guide says the next line from TOUR_HINTS, and the group snaps photos.
+// the guide shares the next fact about the bird that's flying (see copy.ts), and the group
+// snaps photos.
 
-import { TOUR_HINTS } from '../copy';
+import { tourSequence } from '../copy';
 import { wrap } from '../render/font3x5';
-import { dayPhase, isNight, openHours } from '../scene/calendar';
+import { dayPhase, ev, isNight, openHours } from '../scene/calendar';
 import { W, type Dot, type World } from '../world';
 import { lookFor } from './crowd';
 import { drawPerson } from './draw';
@@ -11,7 +12,7 @@ import { drawPerson } from './draw';
 export function stepTour(w: World) {
   const T = w.tour;
   if (T.state === 'gone') {
-    if (!openHours(w) || dayPhase(w) > 0.55) return;
+    if (!openHours(w) || dayPhase(w) > 0.55 || ev(w).id === 'marathon') return;
     if (--T.cool > 0) return;
     T.state = 'walk'; T.x = -24; T.dir = 1; T.stopX = 60 + Math.random() * 190; T.stopped = false; T.t = 0;
     T.guide = lookFor(w, false);
@@ -28,10 +29,11 @@ export function stepTour(w: World) {
   } else {
     T.t++;
     if (T.t === 40) {
-      const H = TOUR_HINTS.map((s) => s.trim()).filter(Boolean);
+      // Talk about whichever bird is flying right now.
+      const H = tourSequence(w.species);
       if (H.length) {
-        w.hintIdx = (w.hintIdx + 1) % H.length;
-        w.tourBub = { lines: wrap(H[w.hintIdx], 20), until: T.t + 300 };
+        const i = (w.hintIdx[w.species] = ((w.hintIdx[w.species] ?? -1) + 1) % H.length);
+        w.tourBub = { lines: wrap(H[i], 20), until: T.t + 300 };
       }
     }
     if (w.tourBub && T.t > w.tourBub.until) w.tourBub = null;

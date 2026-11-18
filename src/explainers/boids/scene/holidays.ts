@@ -219,40 +219,9 @@ const FLAGS: Record<string, string[][]> = {
 
 function drawEventPropsFor(w: World, e: string | null, A: number) {
   if (!e || A <= 0) return;
-  const ctx = w.ctx, t = w.t / 1000, n = w.nightAmt;
+  const ctx = w.ctx, t = w.t / 1000;
   const dot = dotter(w);
   ctx.globalAlpha = A;
-  const flag = FLAGS[e];
-  for (const lamp of LAMPS) {
-    const lx = lamp + 1;
-    if (flag) for (let r = 0; r < flag.length; r++) for (let c = 0; c < 2; c++) dot(flag[r][Math.min(c, flag[r].length - 1)], lx + c, 160 + r);
-    if (e === 'christmas') {
-      // Wreath
-      dot('#2e7a3a', lx - 2, 161); dot('#2e7a3a', lx - 1, 160); dot('#2e7a3a', lx, 160); dot('#2e7a3a', lx + 1, 161);
-      dot('#2e7a3a', lx - 1, 162); dot('#2e7a3a', lx, 162); dot('#e0302a', lx - 1, 163); dot('#e0302a', lx, 163);
-    }
-  }
-  if (e === 'christmas') {
-    const cx = 34, base = 156;
-    for (let r = 0; r < 18; r++) {
-      const half = Math.floor(r / 2.4) + 1;
-      for (let dx = -half; dx <= half; dx++) dot(r % 4 === 3 ? '#1f6a33' : '#2e8a45', cx + dx, base - 18 + r);
-    }
-    dot('#6b4a2a', cx, base); dot('#6b4a2a', cx, base + 1);
-    dot(Math.floor(t * 2) % 2 ? '#f5c400' : '#fff3a0', cx, base - 19); dot('#f5c400', cx - 1, base - 18); dot('#f5c400', cx + 1, base - 18);
-    const bulbs = ['#e0302a', '#f5c400', '#4f8fe0', '#ffffff'];
-    const ba = (0.6 + 0.4 * n) * A;
-    ctx.globalAlpha = ba;
-    for (let r = 0; r < 14; r++) {
-      const by = base - 16 + r, bx = cx + Math.round(Math.sin(r * 1.7) * Math.min(5, r / 2.4));
-      if ((r + Math.floor(t * 3)) % 4 === 0) continue;
-      glow(w, bx, by, 2, bulbs[r % 4], 0.6 * n * A);
-      ctx.globalAlpha = ba;
-      dot(bulbs[r % 4], bx, by);
-    }
-    glow(w, cx, base - 19, 4, '#f5e26a', 0.6 * n * A);
-    ctx.globalAlpha = A;
-  }
   if (e === 'easter' && !isNight(w)) {
     const eggs = [[150, 176], [168, 178], [182, 175], [236, 177], [120, 178]], ec = ['#f4b6c8', '#b58ae0', '#f5e26a', '#9fd6c0', '#7fc8f0'];
     eggs.forEach((g, i) => { dot(ec[i], g[0], g[1]); dot(ec[i], g[0], g[1] - 1); });
@@ -275,7 +244,72 @@ function drawEventPropsFor(w: World, e: string | null, A: number) {
   ctx.globalAlpha = 1;
 }
 
+/**
+ * Lamp-post flags and wreaths. Each lamp shows whatever the Parks worker last hung on it, so they
+ * change one by one at dawn rather than all fading at once (see people/parks.ts).
+ */
+export function drawLampDecor(w: World) {
+  const dot = dotter(w);
+  LAMPS.forEach((lamp, i) => {
+    const e = w.lampDecor[i];
+    if (!e) return;
+    const lx = lamp + 1;
+    const flag = FLAGS[e];
+    if (flag) for (let r = 0; r < flag.length; r++) for (let c = 0; c < 2; c++) dot(flag[r][Math.min(c, flag[r].length - 1)], lx + c, 160 + r);
+    if (e === 'christmas') {
+      // Wreath
+      dot('#2e7a3a', lx - 2, 161); dot('#2e7a3a', lx - 1, 160); dot('#2e7a3a', lx, 160); dot('#2e7a3a', lx + 1, 161);
+      dot('#2e7a3a', lx - 1, 162); dot('#2e7a3a', lx, 162); dot('#e0302a', lx - 1, 163); dot('#e0302a', lx, 163);
+    }
+  });
+}
+
+export const TREE_X = 34;
+export const TREE_BASE = 156;
+const NEEDLES = (r: number) => (r % 4 === 3 ? '#1f6a33' : '#2e8a45');
+
+/** The Christmas tree, standing (state set by the Parks worker; see people/parks.ts). */
+export function drawXmasTree(w: World) {
+  if (w.xmasTree !== 'up' && w.xmasTree !== 'lit') return;
+  const ctx = w.ctx, t = w.t / 1000, n = w.nightAmt, dot = dotter(w);
+  const cx = TREE_X, base = TREE_BASE, lit = w.xmasTree === 'lit';
+  for (let r = 0; r < 18; r++) {
+    const half = Math.floor(r / 2.4) + 1;
+    for (let dx = -half; dx <= half; dx++) dot(NEEDLES(r), cx + dx, base - 18 + r);
+  }
+  dot('#6b4a2a', cx, base); dot('#6b4a2a', cx, base + 1);
+  dot('#f5c400', cx - 1, base - 18); dot('#f5c400', cx + 1, base - 18);
+  if (!lit) { dot('#c9a030', cx, base - 19); return; }
+  // Extension cord to the lamp post
+  for (const [x, y] of [[35, 157], [36, 158], [37, 158], [38, 159], [39, 159], [40, 160]]) dot('#2a2f38', x, y);
+  dot(Math.floor(t * 2) % 2 ? '#f5c400' : '#fff3a0', cx, base - 19);
+  const bulbs = ['#e0302a', '#f5c400', '#4f8fe0', '#ffffff'];
+  const ba = 0.6 + 0.4 * n;
+  ctx.globalAlpha = ba;
+  for (let r = 0; r < 14; r++) {
+    const by = base - 16 + r, bx = cx + Math.round(Math.sin(r * 1.7) * Math.min(5, r / 2.4));
+    if ((r + Math.floor(t * 3)) % 4 === 0) continue;
+    glow(w, bx, by, 2, bulbs[r % 4], 0.6 * n);
+    ctx.globalAlpha = ba;
+    dot(bulbs[r % 4], bx, by);
+  }
+  glow(w, cx, base - 19, 4, '#f5e26a', 0.6 * n);
+  ctx.globalAlpha = 1;
+}
+
+/** The tree lying on its side, trunk at x, tip pointing `dir` (+1 right, −1 left), resting on gy. */
+export function drawLyingTree(w: World, x: number, gy: number, dir: number) {
+  const dot = dotter(w);
+  for (let r = 0; r < 18; r++) {
+    const half = Math.floor(r / 2.4) + 1, px = x + dir * (19 - r);
+    for (let k = 0; k <= half * 2; k++) dot(NEEDLES(r), px, gy - 1 - k);
+  }
+  dot('#6b4a2a', x, gy - 2); dot('#6b4a2a', x + dir, gy - 2);
+}
+
 export function drawEventProps(w: World) {
+  drawXmasTree(w);
+  drawLampDecor(w);
   if (w.prevEvId && w.evFade < 1) drawEventPropsFor(w, w.prevEvId, 1 - w.evFade);
   drawEventPropsFor(w, w.evId, w.prevEvId && w.evFade < 1 ? w.evFade : 1);
 }
