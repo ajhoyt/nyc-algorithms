@@ -111,7 +111,8 @@ h1 { margin: 0; font-family: var(--f-head); font-weight: 700; line-height: 1.04;
 }
 .dialog p { margin: 0; }
 .dialog-title { font-family: var(--f-head); font-weight: 700; font-size: 28px; line-height: 1.1; }
-.dialog-score { font-family: var(--f-head); font-weight: 700; font-size: 40px; line-height: 1; }
+/* Numbers use Silkscreen: Pixelify Sans' bold 5 reads as an S. */
+.dialog-score { font-family: var(--f-label); font-weight: 400; font-size: 36px; line-height: 1; }
 .dialog-body { font-size: 15px; line-height: 1.5; color: var(--muted); }
 
 .controls { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
@@ -187,7 +188,7 @@ a.card:focus-visible { outline: 3px dashed var(--link); outline-offset: 6px; }
   .chip { padding: 4px 8px; }
   .dialog { padding: 14px 16px; gap: 8px; width: 92%; }
   .dialog-title { font-size: 22px; }
-  .dialog-score { font-size: 30px; }
+  .dialog-score { font-size: 26px; }
   .dialog-body { font-size: 14px; }
   .controls { padding: 18px; }
 }
