@@ -91,7 +91,7 @@ export function initPeople(w: World) {
   w.board = Array.from({ length: 8 }, () => Math.random() < 0.5);
   for (const a of Object.values(w.actors)) if (wants(w, a)) placeNow(w, a);
   for (let i = 0; i < 5; i++) spawnWalker(w, true);
-  w.tour = { state: 'gone', cool: 240, x: -30, dir: 1, t: 0 };
+  w.tour = { state: 'gone', cool: 60, x: -30, dir: 1, t: 0 };
   w.discT = 0; w.ballT = 0; w.ball = { from: 0, t: 0, hold: 60, miss: false };
 }
 

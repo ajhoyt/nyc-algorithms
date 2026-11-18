@@ -1,8 +1,9 @@
 // A walking tour: a guide in yellow with a flag, a few tourists (one kid). The tour stops once,
 // the guide shares the next fact about the bird that's flying (see copy.ts), and the group
-// snaps photos.
+// snaps photos. The first two tours of a visit explain what boids are; the first one hurries in
+// a few seconds after the page opens.
 
-import { tourSequence } from '../copy';
+import { TOUR_FACTS, tourSequence } from '../copy';
 import { wrap } from '../render/font3x5';
 import { dayPhase, ev, isNight, openHours } from '../scene/calendar';
 import { W, type Dot, type World } from '../world';
@@ -14,27 +15,34 @@ export function stepTour(w: World) {
   if (T.state === 'gone') {
     if (!openHours(w) || dayPhase(w) > 0.55 || ev(w).id === 'marathon') return;
     if (--T.cool > 0) return;
-    T.state = 'walk'; T.x = -24; T.dir = 1; T.stopX = 60 + Math.random() * 190; T.stopped = false; T.t = 0;
+    const first = w.toursDone === 0;
+    T.state = 'walk'; T.x = -24; T.dir = 1; T.stopped = false; T.t = 0; T.fast = first;
+    T.stopX = first ? 75 + Math.random() * 20 : 60 + Math.random() * 190;
     T.guide = lookFor(w, false);
     T.guide.top = '#f5c400';
     T.members = [lookFor(w, false), lookFor(w, false), lookFor(w, true), lookFor(w, false)];
     return;
   }
   if (T.state === 'walk') {
-    const hurry = !openHours(w);
-    T.x += hurry ? 0.5 : 0.2;
+    const hurry = !openHours(w) || (T.fast && !T.stopped);
+    const prevX = T.x;
+    T.x += hurry ? 0.45 : 0.2;
     T.ph = (T.ph ?? 0) + (hurry ? 0.25 : 0.12);
-    if (!T.stopped && !isNight(w) && Math.abs(T.x - (T.stopX ?? 0)) < 0.2) { T.state = 'stop'; T.t = 0; T.stopped = true; }
+    const stopX = T.stopX ?? 0;
+    if (!T.stopped && !isNight(w) && prevX < stopX && T.x >= stopX) { T.state = 'stop'; T.t = 0; T.stopped = true; }
     if (T.x > W + 30) { T.state = 'gone'; T.cool = 1200; }
   } else {
     T.t++;
     if (T.t === 40) {
-      // Talk about whichever bird is flying right now.
-      const H = tourSequence(w.species);
-      if (H.length) {
-        const i = (w.hintIdx[w.species] = ((w.hintIdx[w.species] ?? -1) + 1) % H.length);
-        w.tourBub = { lines: wrap(H[i], 20), until: T.t + 300 };
+      // First two tours: what boids are. After that, whichever bird is flying right now.
+      let line: string | undefined;
+      if (w.toursDone < 2) line = TOUR_FACTS.general[w.toursDone];
+      else {
+        const H = tourSequence(w.species);
+        if (H.length) line = H[(w.hintIdx[w.species] = ((w.hintIdx[w.species] ?? -1) + 1) % H.length)];
       }
+      w.toursDone++;
+      if (line) w.tourBub = { lines: wrap(line, 20), until: T.t + 300 };
     }
     if (w.tourBub && T.t > w.tourBub.until) w.tourBub = null;
     if (T.t > 380 || !openHours(w)) { T.state = 'walk'; w.tourBub = null; }

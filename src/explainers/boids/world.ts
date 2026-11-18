@@ -101,7 +101,7 @@ export type Fx =
   | { type: 'coin'; sx: number; sy: number; tx: number; ty: number; t: number; to: Actor };
 
 export interface Tour {
-  state: 'gone' | 'walk' | 'stop'; cool: number; x: number; dir: number; t: number; ph?: number;
+  state: 'gone' | 'walk' | 'stop'; cool: number; x: number; dir: number; t: number; ph?: number; fast?: boolean;
   stopX?: number; stopped?: boolean; guide?: Look; members?: Look[];
 }
 
@@ -213,8 +213,9 @@ export interface World {
   skaters: Skater[];
   challenger: Walker | null;
   proposing: Walker | null;
-  /** Next tour fact per species. */
+  /** Next tour fact per species, and how many tour stops have happened this visit. */
   hintIdx: Partial<Record<Species, number>>;
+  toursDone: number;
   tourBub: { lines: string[]; until: number } | null;
 
   // --- speech bubbles
@@ -247,7 +248,7 @@ export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElemen
     nightClock: 0, dropped: false, fireworks: [], flakes: [], flakeEv: null, balloons: null, boats: null,
     walkers: [], fx: [], actors: null, board: [], tour: { state: 'gone', cool: 240, x: -30, dir: 1, t: 0 },
     discT: 0, ballT: 0, ball: { from: 0, t: 0, hold: 60, miss: false }, bridgers: [], skaters: [],
-    challenger: null, proposing: null, hintIdx: {}, tourBub: null,
+    challenger: null, proposing: null, hintIdx: {}, toursDone: 0, tourBub: null,
     bub: null, bubShow: false, nextBub: 0, bag: [], bagKey: '', lastLine: '',
     hawkSpr, falconSpr,
   };
