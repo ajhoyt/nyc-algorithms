@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NYC Algos – Sprites</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Pixelify+Sans:wght@500;700&amp;family=Silkscreen&amp;display=swap">
+<style>
+body{margin:0;background:#eef2f5}
+canvas.px{image-rendering:pixelated;image-rendering:crisp-edges}
+</style>
+</helmet>
+<div style="width: 1200px; height: 760px; box-sizing: border-box; padding: 48px; background: #eef2f5; background-image: linear-gradient(#e2e8ed 1px, transparent 1px), linear-gradient(90deg, #e2e8ed 1px, transparent 1px); background-size: 16px 16px; color: #1f2328; font-family: 'Inter', system-ui, sans-serif; display: flex; gap: 48px">
+  <div style="flex: 0 0 auto; display: flex; flex-direction: column; gap: 16px; background: #ffffff; padding: 24px; box-shadow: 0 -4px 0 0 #b8c2cc, 0 4px 0 0 #b8c2cc, -4px 0 0 0 #b8c2cc, 4px 0 0 0 #b8c2cc">
+    <h2 style="margin: 0; font-family: 'Silkscreen', monospace; font-weight: 400; font-size: 20px">PIGEON</h2>
+    <p style="margin: 0; font-family: 'Silkscreen', monospace; font-size: 12px; color: #59626e">3 FRAMES × 2 DIRECTIONS · 5 ANGLES</p>
+    <canvas class="px" ref="{{setPigeon}}" width="66" height="75" role="img" aria-label="Pigeon sprite sheet: flap frames at five flight angles, facing right and left" style="width: 396px; height: 450px; background: #c4e1f6"></canvas>
+  </div>
+  <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 16px; background: #ffffff; padding: 24px; box-shadow: 0 -4px 0 0 #b8c2cc, 0 4px 0 0 #b8c2cc, -4px 0 0 0 #b8c2cc, 4px 0 0 0 #b8c2cc">
+    <h2 style="margin: 0; font-family: 'Silkscreen', monospace; font-weight: 400; font-size: 20px">STARLING</h2>
+    <p style="margin: 0; font-family: 'Silkscreen', monospace; font-size: 12px; color: #59626e">SPRING · SUMMER · FALL · WINTER · 5 ANGLES</p>
+    <canvas class="px" ref="{{setStarling}}" width="108" height="50" role="img" aria-label="Starling sprite sheet: flap frames at five flight angles for spring, summer, fall and winter plumage" style="width: 648px; height: 300px; background: #c4e1f6"></canvas>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":760}}'>
+class Component extends DCLogic {
+  setPigeon = (el) => { if (el) this.drawPigeon(el); };
+  setStarling = (el) => { if (el) this.drawStarling(el); };
+
+  drawPigeon(c) {
+    c.width = 66; c.height = 75;
+    var x = c.getContext('2d');
+    var P = { g: '#a3a8b8', d: '#5d6275', w: '#d6d8e0', n: '#4fb390', m: '#9a6bc0', b: '#f0a848', k: '#3a3d4d' };
+    var F = [
+      ['..w......', '..dw.....', '...dg.mn.', 'kkggggnnb', '.ggggg...', '.........'],
+      ['.........', '.........', '.wwdg.mn.', 'kkggggnnb', '.ggggg...', '.........'],
+      ['.........', '.........', '....g.mn.', 'kkgddgnnb', '.gdddg...', '..dd.....']
+    ];
+    for (var k = -2; k <= 2; k++) for (var f = 0; f < 3; f++) for (var fl = 0; fl < 2; fl++) {
+      var ox = (fl * 3 + f) * 11 + 1, oy = (k + 2) * 15;
+      for (var row = 0; row < 6; row++) for (var col = 0; col < 9; col++) {
+        var ch = F[f][row][col]; if (ch === '.') continue;
+        x.fillStyle = P[ch];
+        x.fillRect(ox + (fl ? 8 - col : col), oy + row + 4 + Math.round((col - 4) * k * 0.4), 1, 1);
+      }
+    }
+  }
+
+  drawStarling(c) {
+    c.width = 108; c.height = 50;
+    var x = c.getContext('2d');
+    var seasons = ['spring', 'summer', 'fall', 'winter'];
+    var F = [
+      ['..p....', '..sp...', 'kskwgky', '.......'],
+      ['.......', '.ps....', 'kkswgky', '.......'],
+      ['.......', '.......', 'kskwgky', '..sp...']
+    ];
+    for (var si = 0; si < 4; si++) {
+      var season = seasons[si];
+      var glossy = season === 'summer' || season === 'spring';
+      var P = { k: '#1b1f2b', p: glossy ? '#6a55a8' : '#4a3f6e', g: glossy ? '#2f8a6e' : '#2c5a50' };
+      var spotA = season !== 'summer', spotB = season === 'fall' || season === 'winter';
+      var bill = glossy ? '#f2c230' : '#3b3b44';
+      for (var k = -2; k <= 2; k++) for (var f = 0; f < 3; f++) {
+        var ox = (si * 3 + f) * 9 + 1, oy = (k + 2) * 10;
+        for (var row = 0; row < 4; row++) for (var col = 0; col < 7; col++) {
+          var ch = F[f][row][col]; if (ch === '.') continue;
+          x.fillStyle = ch === 'y' ? bill : ch === 'w' ? (spotA ? '#f1ead2' : P.k) : ch === 's' ? (spotB ? '#e9e3cc' : P.k) : P[ch];
+          x.fillRect(ox + col, oy + row + 3 + Math.round((col - 3) * k * 0.45), 1, 1);
+        }
+      }
+    }
+  }
+
+  renderVals() {
+    return { setPigeon: this.setPigeon, setStarling: this.setStarling };
+  }
+}
+</script>
+</body>
+</html>

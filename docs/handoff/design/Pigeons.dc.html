@@ -1,0 +1,2293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NYC Algos – Birds of Central Park</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Pixelify+Sans:wght@500;700&amp;family=Silkscreen&amp;display=swap">
+<style>
+body{margin:0;background:#eef2f5}
+a{color:#1f5fa6}a:hover{color:#174a82}
+canvas.px{image-rendering:pixelated;image-rendering:crisp-edges}
+.px-range{-webkit-appearance:none;appearance:none;width:100%;height:32px;background:transparent;cursor:pointer;margin:0}
+.px-range::-webkit-slider-runnable-track{height:8px;background:#b8c2cc}
+.px-range::-moz-range-track{height:8px;background:#b8c2cc}
+.px-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:24px;margin-top:-8px;background:#f5c400;box-shadow:0 4px 0 #1c1c1c;border:0;border-radius:0}
+.px-range::-moz-range-thumb{width:16px;height:24px;background:#f5c400;border:0;border-radius:0;box-shadow:0 4px 0 #1c1c1c}
+.px-range:disabled{opacity:.4;cursor:not-allowed}
+.px-range:focus-visible{outline:2px dashed #1f5fa6;outline-offset:4px}
+button:focus-visible{outline:3px dashed #1f2328;outline-offset:4px}
+input[type=checkbox]{accent-color:#1f5fa6;width:20px;height:20px;margin:0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #eef2f5; background-image: linear-gradient(#e2e8ed 1px, transparent 1px), linear-gradient(90deg, #e2e8ed 1px, transparent 1px); background-size: 16px 16px; color: #1f2328; font-family: 'Inter', system-ui, sans-serif">
+  <header style="background: #ffffff; border-bottom: 4px solid #1c1c1c">
+    <div style="max-width: 1120px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+      <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #ffffff; background: #1c1c1c; padding: 6px 16px 6px 10px; box-sizing: border-box; font-family: 'Silkscreen', monospace; font-size: 20px; min-height: 44px">
+        <svg width="35" height="15" viewBox="0 0 7 3" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="1" height="1" fill="#8a77c4"></rect><rect x="2" y="1" width="1" height="1" fill="#ffffff"></rect><rect x="3" y="1" width="1" height="1" fill="#8a77c4"></rect><rect x="0" y="2" width="2" height="1" fill="#ffffff"></rect><rect x="2" y="2" width="1" height="1" fill="#e9e3cc"></rect><rect x="3" y="2" width="1" height="1" fill="#ffffff"></rect><rect x="4" y="2" width="1" height="1" fill="#5fb39a"></rect><rect x="5" y="2" width="1" height="1" fill="#ffffff"></rect><rect x="6" y="2" width="1" height="1" fill="#f2c230"></rect></svg>
+        NYC ALGOS
+      </a>
+      <nav aria-label="Main" style="display: flex; gap: 8px; flex-wrap: wrap; font-family: 'Silkscreen', monospace; font-size: 14px">
+        <a href="Main.dc.html" style="color: #1f2328; text-decoration: none; padding: 12px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center">← ALL EXPLAINERS</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1120px; margin: 0 auto; padding: 40px 24px 80px; display: flex; flex-direction: column; gap: 40px">
+    <section style="display: flex; flex-direction: column; gap: 16px; max-width: 780px">
+      <h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: clamp(38px, 5.5vw, 64px); line-height: 1.04">[TITLE]</h1>
+      <p style="margin: 0; font-size: 19px; line-height: 1.6; color: #3d444d">[INTRO]</p>
+    </section>
+
+    <section aria-label="Flocking sandbox" style="display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start">
+      <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #ffffff; padding: 12px 14px; box-shadow: 0 -4px 0 0 #b8c2cc, 0 4px 0 0 #b8c2cc, -4px 0 0 0 #b8c2cc, 4px 0 0 0 #b8c2cc">
+          <div role="group" aria-label="Mode" style="display: flex; gap: 8px; flex-wrap: wrap">
+            <sc-for list="{{modes}}" as="md" hint-placeholder-count="3">
+              <sc-if value="{{md.on}}" hint-placeholder-val="{{ false }}">
+                <button type="button" aria-pressed="true" onClick="{{md.pick}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: {{accent}}; color: #14141f; border: 0; box-shadow: 0 4px 0 #1c1c1c; cursor: pointer">{{md.label}}</button>
+              </sc-if>
+              <sc-if value="{{md.off}}" hint-placeholder-val="{{ true }}">
+                <button type="button" aria-pressed="false" onClick="{{md.pick}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: #ffffff; color: #1f2328; border: 0; box-shadow: 0 4px 0 #8a96a3; cursor: pointer">{{md.label}}</button>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="position: relative; background: #ffffff; padding: 8px; box-shadow: 0 -4px 0 0 #b8c2cc, 0 4px 0 0 #b8c2cc, -4px 0 0 0 #b8c2cc, 4px 0 0 0 #b8c2cc">
+          <canvas class="px" ref="{{setCanvas}}" width="320" height="180" role="img" aria-label="A pixel-art flock of birds over the lake in Central Park, with Bow Bridge, the Empire State Building and people in the park" onPointerMove="{{onMove}}" onPointerDown="{{onDown}}" onPointerUp="{{onUp}}" onPointerLeave="{{onLeave}}" style="display: block; width: 100%; aspect-ratio: 16 / 9; background: #7db6e8; touch-action: none; cursor: crosshair"></canvas>
+<sc-if value="{{hudSurvive}}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; left: 18px; top: 18px; display: flex; gap: 8px; font-family: 'Silkscreen', monospace; font-size: 14px"><span style="background: #1c1c1c; color: #ffffff; padding: 6px 10px">ALIVE {{alive}}/{{total}}</span><span style="background: {{accent}}; color: #14141f; padding: 6px 10px">{{survSecs}}</span></div>
+          </sc-if>
+          <sc-if value="{{hudWrangle}}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; left: 18px; top: 18px; display: flex; gap: 8px; font-family: 'Silkscreen', monospace; font-size: 14px"><span style="background: #1c1c1c; color: #ffffff; padding: 6px 10px">FLOCKS {{flocks}}</span><span style="background: {{accent}}; color: #14141f; padding: 6px 10px">{{clock}}</span></div>
+          </sc-if>
+          <sc-if value="{{dialogOpen}}" hint-placeholder-val="{{ false }}">
+            <div role="dialog" aria-label="Challenge" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, 86%); box-sizing: border-box; background: #ffffff; padding: 20px 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; box-shadow: 0 -4px 0 0 #1c1c1c, 0 4px 0 0 #1c1c1c, -4px 0 0 0 #1c1c1c, 4px 0 0 0 #1c1c1c">
+              <p style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 28px">[TITLE]</p>
+              <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #3d444d">[DESCRIPTION]</p>
+              <div style="display: flex; gap: 10px">
+                <button type="button" onClick="{{startDialog}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: {{accent}}; color: #14141f; border: 0; box-shadow: 0 4px 0 #1c1c1c; cursor: pointer">START</button>
+                <button type="button" onClick="{{closeDialog}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: #ffffff; color: #1f2328; border: 0; box-shadow: 0 4px 0 #8a96a3; cursor: pointer">BACK</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{overSurvive}}" hint-placeholder-val="{{ false }}">
+            <div role="dialog" aria-label="Result" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, 86%); box-sizing: border-box; background: #ffffff; padding: 20px 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; box-shadow: 0 -4px 0 0 #1c1c1c, 0 4px 0 0 #1c1c1c, -4px 0 0 0 #1c1c1c, 4px 0 0 0 #1c1c1c">
+              <p style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 40px">{{alive}} / {{total}}</p>
+              <p style="margin: 0; font-size: 15px; color: #3d444d">[RESULT]</p>
+              <div style="display: flex; gap: 10px">
+                <button type="button" onClick="{{again}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: {{accent}}; color: #14141f; border: 0; box-shadow: 0 4px 0 #1c1c1c; cursor: pointer">AGAIN</button>
+                <button type="button" onClick="{{back}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: #ffffff; color: #1f2328; border: 0; box-shadow: 0 4px 0 #8a96a3; cursor: pointer">BACK TO SANDBOX</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{overWrangle}}" hint-placeholder-val="{{ false }}">
+            <div role="dialog" aria-label="Result" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, 86%); box-sizing: border-box; background: #ffffff; padding: 20px 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; box-shadow: 0 -4px 0 0 #1c1c1c, 0 4px 0 0 #1c1c1c, -4px 0 0 0 #1c1c1c, 4px 0 0 0 #1c1c1c">
+              <p style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 40px">{{clock}}</p>
+              <p style="margin: 0; font-size: 15px; color: #3d444d">[RESULT]</p>
+              <div style="display: flex; gap: 10px">
+                <button type="button" onClick="{{again}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: {{accent}}; color: #14141f; border: 0; box-shadow: 0 4px 0 #1c1c1c; cursor: pointer">AGAIN</button>
+                <button type="button" onClick="{{back}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: #ffffff; color: #1f2328; border: 0; box-shadow: 0 4px 0 #8a96a3; cursor: pointer">BACK TO SANDBOX</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+
+      </div>
+
+      <div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 22px; background: #ffffff; padding: 22px; box-shadow: 0 -4px 0 0 #d3dae1, 0 4px 0 0 #d3dae1, -4px 0 0 0 #d3dae1, 4px 0 0 0 #d3dae1">
+        <h2 style="margin: 0; font-family: 'Silkscreen', monospace; font-weight: 400; font-size: 18px">THE BIRDS</h2>
+
+        <div role="group" aria-label="Bird" style="display: flex; gap: 12px">
+          <sc-if value="{{isStarling}}" hint-placeholder-val="{{ true }}">
+            <button type="button" aria-pressed="true" onClick="{{pickStarling}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px 8px; background: #ffffff; border: 0; cursor: pointer; box-shadow: 0 -4px 0 0 #1c1c1c, 0 4px 0 0 #1c1c1c, -4px 0 0 0 #1c1c1c, 4px 0 0 0 #1c1c1c">
+                <canvas class="px" ref="{{setPortraitStarling}}" width="11" height="10" aria-hidden="true" style="width: 66px; height: 60px; background: transparent"></canvas>
+                <span style="font-family: 'Silkscreen', monospace; font-size: 12px; color: #1f2328">STARLING</span>
+              </button>
+            <button type="button" aria-pressed="false" onClick="{{pickPigeon}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px 8px; background: #eef2f5; border: 0; cursor: pointer; box-shadow: 0 -4px 0 0 #d3dae1, 0 4px 0 0 #d3dae1, -4px 0 0 0 #d3dae1, 4px 0 0 0 #d3dae1">
+                <canvas class="px" ref="{{setPortraitPigeon}}" width="11" height="10" aria-hidden="true" style="width: 66px; height: 60px; background: transparent"></canvas>
+                <span style="font-family: 'Silkscreen', monospace; font-size: 12px; color: #59626e">PIGEON</span>
+              </button>
+          </sc-if>
+          <sc-if value="{{isPigeon}}" hint-placeholder-val="{{ false }}">
+            <button type="button" aria-pressed="false" onClick="{{pickStarling}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px 8px; background: #eef2f5; border: 0; cursor: pointer; box-shadow: 0 -4px 0 0 #d3dae1, 0 4px 0 0 #d3dae1, -4px 0 0 0 #d3dae1, 4px 0 0 0 #d3dae1">
+                <canvas class="px" ref="{{setPortraitStarling}}" width="11" height="10" aria-hidden="true" style="width: 66px; height: 60px; background: transparent"></canvas>
+                <span style="font-family: 'Silkscreen', monospace; font-size: 12px; color: #59626e">STARLING</span>
+              </button>
+            <button type="button" aria-pressed="true" onClick="{{pickPigeon}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px 8px; background: #ffffff; border: 0; cursor: pointer; box-shadow: 0 -4px 0 0 #1c1c1c, 0 4px 0 0 #1c1c1c, -4px 0 0 0 #1c1c1c, 4px 0 0 0 #1c1c1c">
+                <canvas class="px" ref="{{setPortraitPigeon}}" width="11" height="10" aria-hidden="true" style="width: 66px; height: 60px; background: transparent"></canvas>
+                <span style="font-family: 'Silkscreen', monospace; font-size: 12px; color: #1f2328">PIGEON</span>
+              </button>
+          </sc-if>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <label for="r-count" style="font-family: 'Pixelify Sans', monospace; font-size: 20px">Birds</label>
+            <span style="font-family: 'Silkscreen', monospace; font-size: 14px; color: #1f5fa6">{{count}}</span>
+          </div>
+          <input id="r-count" class="px-range" type="range" min="10" max="250" step="10" value="{{count}}" disabled="{{countLocked}}" onChange="{{onCount}}">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <label for="r-sep" style="font-family: 'Pixelify Sans', monospace; font-size: 20px">Separation</label>
+            <span style="font-family: 'Silkscreen', monospace; font-size: 14px; color: #1f5fa6">{{sepLabel}}</span>
+          </div>
+          <input id="r-sep" class="px-range" type="range" min="0" max="3" step="0.1" value="{{sep}}" onChange="{{onSep}}">
+          <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #59626e">[HINT]</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <label for="r-ali" style="font-family: 'Pixelify Sans', monospace; font-size: 20px">Alignment</label>
+            <span style="font-family: 'Silkscreen', monospace; font-size: 14px; color: #1f5fa6">{{aliLabel}}</span>
+          </div>
+          <input id="r-ali" class="px-range" type="range" min="0" max="3" step="0.1" value="{{ali}}" onChange="{{onAli}}">
+          <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #59626e">[HINT]</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <label for="r-coh" style="font-family: 'Pixelify Sans', monospace; font-size: 20px">Cohesion</label>
+            <span style="font-family: 'Silkscreen', monospace; font-size: 14px; color: #1f5fa6">{{cohLabel}}</span>
+          </div>
+          <input id="r-coh" class="px-range" type="range" min="0" max="3" step="0.1" value="{{coh}}" onChange="{{onCoh}}">
+          <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #59626e">[HINT]</p>
+        </div>
+
+        <label for="sight" style="display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 44px; cursor: pointer">
+          <input id="sight" type="checkbox" checked="{{sight}}" onChange="{{toggleSight}}">
+          [TOGGLE LABEL]
+        </label>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <button type="button" onClick="{{presetTight}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: #ffffff; color: #1f2328; border: 0; box-shadow: 0 4px 0 #8a96a3; cursor: pointer">TIGHT FLOCK</button>
+          <button type="button" onClick="{{presetChaos}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: #ffffff; color: #1f2328; border: 0; box-shadow: 0 4px 0 #8a96a3; cursor: pointer">CHAOS</button>
+          <button type="button" onClick="{{reset}}" style="font-family: 'Silkscreen', monospace; font-size: 13px; padding: 10px 12px; min-height: 44px; background: {{accent}}; color: #14141f; border: 0; box-shadow: 0 4px 0 #1c1c1c; cursor: pointer">RESET</button>
+        </div>
+      </div>
+    </section>
+
+
+    <section aria-label="Story" style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch">
+      <div style="flex: 1 1 320px; min-width: 0; min-height: 240px; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 4px dashed #b8c2cc; font-family: 'Silkscreen', monospace; font-size: 14px; color: #59626e">[ILLUSTRATION: CENTRAL PARK, 1890]</div>
+      <div style="flex: 2 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 14px; justify-content: center">
+        <h2 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 36px">[STORY HEADLINE]</h2>
+        <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #3d444d">[STORY]</p>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-wrap: wrap; gap: 32px; align-items: center; justify-content: space-between; background: #ffffff; padding: 28px; box-shadow: 0 -4px 0 0 #d3dae1, 0 4px 0 0 #d3dae1, -4px 0 0 0 #d3dae1, 4px 0 0 0 #d3dae1">
+      <p style="margin: 0; font-size: 14px; color: #59626e">Boids: Craig Reynolds, 1987</p>
+      <a href="Main.dc.html" style="font-family: 'Silkscreen', monospace; font-size: 14px; padding: 14px 18px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; background: #ffffff; color: #1f2328; text-decoration: none; box-shadow: 0 4px 0 #8a96a3">NEXT →</a>
+    </section>
+  </main>
+
+  <footer style="border-top: 4px solid #c9d1d9">
+    <div style="max-width: 1120px; margin: 0 auto; padding: 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-family: 'Silkscreen', monospace; font-size: 12px; color: #59626e">
+      <span>NYC ALGOS</span>
+      <span>BY [YOUR NAME]</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#f5c400","options":["#f5c400","#7db6e8","#e05a33","#ffffff"]},"hints":{"editor":"text","default":"[HINT 1]\n[HINT 2]\n[HINT 3]"},"chatter":{"editor":"text","default":"It&#39;s all about da Mets!\nAy, I&#39;m walkin&#39; here!"},"$preview":{"width":1440,"height":2050}}'>
+class Component extends DCLogic {
+  state = { mode: 'sandbox', dialog: null, species: 'starling', season: 'winter', event: 0, night: false, auto: true, sep: 1.2, ali: 1.0, coh: 1.0, count: 120, sight: false, alive: 0, total: 80, secs: 30, flocks: 0, over: false };
+  W = 320; H = 180; G = 160; FLOOR = 116; LX0 = 64; LX1 = 256; DX = 200;
+  w = { sep: 1.2, ali: 1.0, coh: 1.0 };
+  hawk = { on: false, down: false, x: 0, y: 0 };
+  birds = [];
+  puffs = [];
+  acc = 0;
+  autoClock = 0;
+  sightOn = false;
+  mode = 'sandbox';
+  count = 120;
+  species = 'starling';
+  spec = { R: 20, S: 6, ox: 3, oy: 5 };
+  fireworks = [];
+  hearts = [];
+
+  setCanvas = (el) => { this.canvas = el; };
+  componentDidMount() { this.alive = true; this.raf = requestAnimationFrame(this.tick); }
+  componentWillUnmount() { this.alive = false; cancelAnimationFrame(this.raf); }
+
+  // ---------- calendar
+  events() {
+    return {
+      winter: [
+        { id: 'christmas', label: 'CHRISTMAS', esb: ['#e0302a', '#2e9e4b', '#e0302a'] },
+        { id: 'newyear', label: 'NEW YEAR', esb: ['#ffffff', '#f5c400', '#ffffff'], fireworks: true, sparkle: true },
+        { id: 'valentines', label: 'VALENTINE’S', esb: ['#e0302a', '#f08aa8', '#ffffff'] }
+      ],
+      spring: [
+        { id: 'stpatricks', label: 'ST. PATRICK’S', esb: ['#2e9e4b', '#2e9e4b', '#2e9e4b'] },
+        { id: 'blossom', label: 'BLOSSOMS', esb: ['#f08aa8', '#ffffff', '#f08aa8'] },
+        { id: 'easter', label: 'EASTER', esb: ['#f5c400', '#b58ae0', '#f5c400'] }
+      ],
+      summer: [
+        { id: 'pride', label: 'PRIDE', esb: ['#e0302a', '#f5c400', '#2e9e4b', '#1f5fa6', '#8a4fc0'], rainbow: true },
+        { id: 'july4', label: 'JULY 4TH', esb: ['#e0302a', '#ffffff', '#1f5fa6'], fireworks: true },
+        { id: 'heat', label: 'HEAT WAVE', esb: ['#ffffff', '#ffffff', '#ffffff'] }
+      ],
+      fall: [
+        { id: 'marathon', label: 'MARATHON', esb: ['#1f5fa6', '#e3842f', '#1f5fa6'] },
+        { id: 'halloween', label: 'HALLOWEEN', esb: ['#e3842f', '#8a4fc0', '#e3842f'] },
+        { id: 'thanksgiving', label: 'THANKSGIVING', esb: ['#e3842f', '#f5c400', '#c8512b'] }
+      ]
+    };
+  }
+  evById(id) {
+    var all = this.events();
+    for (var k in all) for (var i = 0; i < all[k].length; i++) if (all[k][i].id === id) return all[k][i];
+    return null;
+  }
+  evAlphaFor(id) {
+    var f = this.evFade ?? 1;
+    if (id === this.evId) return this.prevEvId && f < 1 ? f : 1;
+    if (id === this.prevEvId && f < 1) return 1 - f;
+    return 0;
+  }
+  ev() {
+    var s = this.state || {};
+    var list = this.events()[s.season || 'winter'];
+    return list[Math.min(list.length - 1, s.event || 0)];
+  }
+
+  // ---------- flock management
+  setSpecies(sp) {
+    this.species = sp;
+    this.spec = sp === 'pigeon' ? { R: 26, S: 9, ox: 4, oy: 7 } : { R: 20, S: 6, ox: 3, oy: 5 };
+    this.season = null;
+  }
+  newBird(xmin, xmax, scatter) {
+    var a = scatter ? Math.random() * Math.PI * 2 : (Math.random() - 0.5) * 0.6;
+    return { x: xmin + Math.random() * (xmax - xmin), y: scatter ? 10 + Math.random() * 105 : 20 + Math.random() * 80, vx: Math.cos(a), vy: Math.sin(a), ph: Math.random() * 4, nb: 0 };
+  }
+  spawn(n, scatter) {
+    this.birds = [];
+    for (var i = 0; i < n; i++) this.birds.push(scatter ? this.newBird(0, this.W, true) : this.newBird(8, 130, false));
+    this.bub = null; this.bubShow = false;
+  }
+  syncCount() {
+    if (this.mode !== 'sandbox') return;
+    var B = this.birds, n = this.count;
+    while (B.length < n) B.push(this.newBird(-6, 40, false));
+    if (B.length > n) { B.length = n; this.bub = null; this.bubShow = false; }
+  }
+
+  startGame(m) {
+    this.mode = m; this.hawk.on = false; this.over = false; this.puffs = []; this.won = false;
+    if (m === 'survive') {
+      this.spawn(80, false);
+      this.falcon = { x: this.W + 20, y: 20, vx: -2, vy: 0.4, target: null, cool: 120, retarget: 0, ph: 0 };
+      this.timeLeft = 30000;
+    } else if (m === 'wrangle') {
+      this.falcon = null;
+      this.spawn(80, true);
+      this.preset(1.2, 0, 0);
+      this.elapsed = 0; this.oneFor = 0; this.flocks = 99;
+    } else {
+      this.falcon = null;
+      this.spawn(this.count, false);
+    }
+    this.setState({ mode: m, dialog: null, over: false });
+    this.pushHud(true);
+  }
+
+  // ---------- main loop
+  tick = (t) => {
+    if (!this.alive) return;
+    this.raf = requestAnimationFrame(this.tick);
+    var c = this.canvas;
+    if (!c) return;
+    if (!this.ctx || this.ctx.canvas !== c) {
+      c.width = this.W * 4; c.height = this.H * 4;
+      this.ctx = c.getContext('2d');
+      this.ctx.setTransform(4, 0, 0, 4, 0, 0);
+      this.ctx.imageSmoothingEnabled = false;
+      if (!this.hawkSpr) this.hawkSpr = this.makeHawk();
+      if (!this.falconSpr) this.falconSpr = this.makeFalcon();
+      if (!this.birds.length) this.spawn(this.count, false);
+    }
+    var dt = this.prevT ? Math.min(100, t - this.prevT) : 16.7;
+    this.prevT = t;
+    this.frameDt = dt;
+    this.advanceAuto(dt);
+    this.ensureScene();
+    var nt = this.isNight() ? 1 : 0;
+    if (this.nightAmt === undefined) this.nightAmt = nt;
+    if (this.nightAmt < nt) this.nightAmt = Math.min(nt, this.nightAmt + dt / 4000);
+    else if (this.nightAmt > nt) this.nightAmt = Math.max(nt, this.nightAmt - dt / 4000);
+    if (this.seasonFade < 1) this.seasonFade = Math.min(1, this.seasonFade + dt / 2500);
+    if (this.season === 'winter') { this.meltT = 0; this.puddle = 0; }
+    else if (this.prevSeason === 'winter' && (this.meltT || 0) < 1) { this.meltT = Math.min(1, (this.meltT || 0) + dt / 7000); this.puddle = 1.5; }
+    else if (this.puddle > 0) this.puddle = Math.max(0, this.puddle - dt / 9000);
+    var eid = this.ev().id;
+    if (this.evId !== eid) { this.prevEvId = this.evId || null; this.evId = eid; this.evFade = this.prevEvId ? 0 : 1; }
+    if (this.evFade < 1) this.evFade = Math.min(1, this.evFade + dt / 3000);
+    if (this.isNight()) this.nightClock = (this.nightClock || 0) + dt; else { this.nightClock = 0; this.dropped = false; }
+    this.syncCount();
+    this.acc += dt;
+    var steps = 0;
+    while (this.acc >= 16.67 && steps < 4) {
+      if (!this.paused()) {
+        this.step();
+        if (this.mode === 'survive') this.falconStep();
+        if (this.mode === 'wrangle') this.wrangleStep();
+      }
+      this.stepPeople();
+      this.stepSky();
+      this.acc -= 16.67; steps++;
+    }
+    if (steps === 4) this.acc = 0;
+    this.updateBubble(t);
+    this.draw();
+    if (!this.lastHud || t - this.lastHud > 200) { this.lastHud = t; this.pushHud(false); }
+  };
+
+  paused() { var s = this.state || {}; return !!s.dialog && this.mode === 'sandbox' ? false : false; }
+
+  advanceAuto(dt) {
+    var s = this.state || {};
+    if (!s.auto) { this.autoClock = 0; return; }
+    this.autoClock += dt;
+    if (this.autoClock < (s.night ? 14000 : 28000)) return;
+    this.autoClock = 0;
+    if (!s.night) { this.setState({ night: true }); return; }
+    var order = ['spring', 'summer', 'fall', 'winter'], ev = (s.event || 0) + 1;
+    if (ev >= 3) this.setState({ night: false, event: 0, season: order[(order.indexOf(s.season) + 1) % 4] });
+    else this.setState({ night: false, event: ev });
+  }
+
+  pushHud(force) {
+    var s = this.state || {}, upd = null;
+    if (this.mode === 'survive') {
+      var secs = Math.max(0, Math.ceil((this.timeLeft || 0) / 1000));
+      if (force || s.alive !== this.birds.length || s.secs !== secs || s.over !== !!this.over) upd = { alive: this.birds.length, total: 80, secs: secs, over: !!this.over };
+    } else if (this.mode === 'wrangle') {
+      var es = Math.floor((this.elapsed || 0) / 1000);
+      if (force || s.flocks !== this.flocks || s.secs !== es || s.over !== !!this.over) upd = { flocks: this.flocks, secs: es, over: !!this.over };
+    }
+    if (upd) this.setState(upd);
+  }
+
+  // ---------- wrangle
+  wrangleStep() {
+    if (this.over) return;
+    this.elapsed += 16.67;
+    this.wt = (this.wt || 0) + 1;
+    if (this.wt % 15) return;
+    var B = this.birds, n = B.length, par = [], i, j, R2 = 22 * 22;
+    for (i = 0; i < n; i++) par[i] = i;
+    var find = function (a) { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
+    for (i = 0; i < n; i++) for (j = i + 1; j < n; j++) {
+      var dx = B[i].x - B[j].x, dy = B[i].y - B[j].y;
+      if (Math.abs(dx) > this.W / 2) dx = this.W + 12 - Math.abs(dx);
+      if (dx * dx + dy * dy < R2) { var a = find(i), b = find(j); if (a !== b) par[a] = b; }
+    }
+    var size = {}, k = 0, big = 0;
+    for (i = 0; i < n; i++) { var r = find(i); size[r] = (size[r] || 0) + 1; }
+    for (var key in size) { if (size[key] >= 3) k++; if (size[key] > big) big = size[key]; }
+    this.flocks = k;
+    if (k === 1 && big >= n * 0.75) { this.oneFor += 15; if (this.oneFor >= 120) { this.over = true; this.pushHud(true); } }
+    else this.oneFor = 0;
+  }
+
+  // ---------- falcon
+  falconStep() {
+    var f = this.falcon; if (!f) return;
+    var B = this.birds, FS = 3.8, FA = 0.28;
+    f.ph += 0.3;
+    if (!this.over) {
+      this.timeLeft -= 16.67;
+      if (this.timeLeft <= 0) { this.timeLeft = 0; this.over = true; f.target = null; f.cool = 9999; this.pushHud(true); }
+    }
+    var tx, ty;
+    if (f.cool > 0) { f.cool--; tx = f.x + f.vx * 20; ty = this.over ? -40 : 10; }
+    else {
+      f.retarget--;
+      if (!f.target || B.indexOf(f.target) < 0 || f.retarget <= 0) {
+        var best = null, bn = 1e9;
+        for (var i = 0; i < B.length; i++) {
+          var b = B[i];
+          if (b.x < 0 || b.x > this.W) continue;
+          var score = b.nb * 10 + Math.hypot(b.x - f.x, b.y - f.y) * 0.05;
+          if (score < bn) { bn = score; best = b; }
+        }
+        f.target = best; f.retarget = 90;
+      }
+      if (!f.target) { tx = this.W / 2; ty = 30; } else { tx = f.target.x; ty = f.target.y; }
+    }
+    var dx = tx - f.x, dy = ty - f.y, d = Math.hypot(dx, dy) || 1;
+    var ax = dx / d * FS - f.vx, ay = dy / d * FS - f.vy, am = Math.hypot(ax, ay);
+    if (am > FA) { ax = ax / am * FA; ay = ay / am * FA; }
+    f.vx += ax; f.vy += ay;
+    var sp = Math.hypot(f.vx, f.vy); if (sp > FS) { f.vx = f.vx / sp * FS; f.vy = f.vy / sp * FS; }
+    f.x += f.vx; f.y += f.vy;
+    if (f.y > this.FLOOR) { f.y = this.FLOOR; f.vy = -Math.abs(f.vy); }
+    if (f.cool <= 0 && f.target) {
+      var td = Math.hypot(f.target.x - f.x, f.target.y - f.y);
+      if (td < 4.5) {
+        if (Math.random() < Math.min(0.9, f.target.nb / 8)) { f.cool = 22; f.target = null; }
+        else {
+          var k = B.indexOf(f.target);
+          if (k >= 0) {
+            var pc = this.species === 'pigeon' ? ['#a3a8b8', '#d6d8e0'] : ['#1b1f2b', '#e9e3cc'];
+            for (var q = 0; q < 8; q++) this.puffs.push({ x: f.target.x, y: f.target.y, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.8) * 0.8, life: 30 + Math.random() * 20, c: pc[q % 2] });
+            if (this.bub && this.bub.b === f.target) { this.bub = null; this.bubShow = false; }
+            B.splice(k, 1);
+          }
+          f.cool = 22; f.target = null;
+        }
+      }
+    }
+  }
+
+  // ---------- scene
+  ensureScene() {
+    var season = (this.state && this.state.season) || 'winter';
+    var key = season + '/' + this.species;
+    if (this.sceneKey === key) return;
+    this.days = this.days || {}; this.nights = this.nights || {}; this.spr = this.spr || {};
+    if (!this.days[season]) { this.days[season] = this.paintScene(season); this.nights[season] = this.nightify(this.days[season]); }
+    if (!this.spr[key]) this.spr[key] = this.species === 'pigeon' ? this.makePigeonSprites() : this.makeSprites(season);
+    if (this.season && this.season !== season) { this.prevSeason = this.season; this.seasonFade = 0; } else if (!this.season) this.seasonFade = 1;
+    this.season = season; this.sceneKey = key;
+    this.sprites = this.spr[key];
+    if (!this.cloudSprites) this.makeCloudSprites();
+    this.makeFlakes(season);
+    this.drawPortrait();
+  }
+
+  makePigeonSprites() {
+    var P = { g: '#a3a8b8', d: '#5d6275', w: '#d6d8e0', n: '#4fb390', m: '#9a6bc0', b: '#f0a848', k: '#3a3d4d' };
+    var F = [
+      ['..w......', '..dw.....', '...dg.mn.', 'kkggggnnb', '.ggggg...', '.........'],
+      ['.........', '.........', '.wwdg.mn.', 'kkggggnnb', '.ggggg...', '.........'],
+      ['.........', '.........', '....g.mn.', 'kkgddgnnb', '.gdddg...', '..dd.....']
+    ];
+    var out = [];
+    for (var k = -2; k <= 2; k++) for (var f = 0; f < 3; f++) for (var fl = 0; fl < 2; fl++) {
+      var c = document.createElement('canvas'); c.width = 9; c.height = 14;
+      var x = c.getContext('2d');
+      for (var row = 0; row < 6; row++) for (var col = 0; col < 9; col++) {
+        var ch = F[f][row][col]; if (ch === '.') continue;
+        x.fillStyle = P[ch];
+        x.fillRect(fl ? 8 - col : col, row + 4 + Math.round((col - 4) * k * 0.4), 1, 1);
+      }
+      out.push(c);
+    }
+    return out;
+  }
+
+  makeFlakes(s) {
+    var old = this.flakes || [];
+    for (var o = 0; o < old.length; o++) old[o].dying = true;
+    var e = this.ev();
+    var n = s === 'winter' ? 70 : s === 'fall' ? 6 : s === 'spring' ? (e.id === 'blossom' ? 34 : 10) : 14;
+    var cols = s === 'winter' ? ['#ffffff'] : s === 'fall' ? ['#f2c230', '#e3842f', '#c8512b'] : s === 'spring' ? ['#f4b6c8'] : ['#d8ff6a'];
+    var firefly = s === 'summer', fresh = [];
+    var fromTree = s === 'spring' || s === 'fall';
+    for (var i = 0; i < n; i++) {
+      if (fromTree) fresh.push({ tree: true, x: Math.random() * this.W, y: 116 + Math.random() * 16, v: 0.05 + Math.random() * 0.07, vx: 0.08 + Math.random() * 0.15, ph: Math.random() * 6, c: cols[i % cols.length], wait: Math.floor(Math.random() * 600) });
+      else fresh.push({ x: Math.random() * this.W, y: firefly ? 140 + Math.random() * 25 : -Math.random() * this.H * 1.5, v: firefly ? 0 : 0.2 + Math.random() * 0.35, ph: Math.random() * 6, c: cols[i % cols.length], ff: firefly });
+    }
+    this.flakes = old.concat(fresh);
+    this.flakeEv = e.id;
+  }
+
+  // ---------- sky events: fireworks, balloons, boats
+  stepSky() {
+    var e = this.ev(), n = this.nightAmt || 0, i;
+    if (this.flakeEv !== e.id) this.makeFlakes(this.season);
+    if (e.fireworks && n > 0.6 && Math.random() < 0.025 && this.fireworks.length < 6) {
+      var cols = e.id === 'july4' ? ['#e0302a', '#ffffff', '#4f8fe0'] : ['#f5c400', '#ffffff', '#f08aa8', '#7fd6ff'];
+      var col = cols[Math.floor(Math.random() * cols.length)], parts = [];
+      for (i = 0; i < 18; i++) { var a = i / 18 * Math.PI * 2; parts.push([Math.cos(a), Math.sin(a)]); }
+      this.fireworks.push({ x: 30 + Math.random() * 260, y: 22 + Math.random() * 50, t: 0, col: col, parts: parts, s: 10 + Math.random() * 8 });
+    }
+    for (i = this.fireworks.length - 1; i >= 0; i--) { this.fireworks[i].t += 1 / 70; if (this.fireworks[i].t >= 1) this.fireworks.splice(i, 1); }
+    if (!this.balloons) this.balloons = [{ kind: 'pigeon', x: -40, y: 86, v: 0.12 }, { kind: 'pizza', x: -120, y: 92, v: 0.1 }];
+    var showB = e.id === 'thanksgiving' && !this.isNight();
+    for (i = 0; i < this.balloons.length; i++) {
+      var b = this.balloons[i];
+      if (showB || (b.x > -30 && b.x < this.W + 30)) { b.x += b.v; if (b.x > this.W + 40) b.x = showB ? -60 - i * 60 : -999; }
+      else if (showB && b.x < -60) b.x = -40 - i * 70;
+    }
+    this.stepBoats();
+  }
+
+  stepBoats() {
+    var DX = this.DX;
+    if (!this.boats) this.boats = [{ slot: DX - 18, state: 'docked', x: DX - 18, y: 157, v: 0.08, ph: 0, a: null, al: 1 }, { slot: DX + 10, state: 'docked', x: DX + 10, y: 157, v: -0.07, ph: 1, a: null, al: 1 }, { slot: DX - 30, state: 'docked', x: DX - 30, y: 157, v: 0.06, ph: 2, a: null, al: 1, summer: true }];
+    var winter = this.season === 'winter', ok = !winter && this.openHours(), out = 0, i, b;
+    for (i = 0; i < this.boats.length; i++) if (this.boats[i].state !== 'docked') out++;
+    for (i = 0; i < this.boats.length; i++) {
+      b = this.boats[i];
+      var allowed = ok && (!b.summer || this.season === 'summer');
+      if (b.state === 'docked') {
+        b.al = Math.max(0, Math.min(1, b.al + (winter ? -1 / 120 : 1 / 120)));
+        b.x = b.slot; b.y = 157;
+        if (allowed && !b.pending && Math.random() < 0.0015) { b.pending = true; this.spawnRoleWalker({ boat: b }); }
+      } else if (b.state === 'out') {
+        b.ph += 0.06; b.x += b.v; b.y += ((b.ty || 151) - b.y) * 0.01; b.timer--;
+        if (b.x > this.LX1 - 18 || b.x < this.LX0 + 10) { b.v = -b.v; b.x += b.v * 2; }
+        if (b.timer <= 0 || !allowed) b.state = 'return';
+      } else if (b.state === 'return') {
+        b.ph += 0.08;
+        var dx = b.slot - b.x, dy = 157 - b.y, d = Math.hypot(dx, dy), sp = winter ? 0.3 : 0.12;
+        if (d < 0.6) { b.state = 'docked'; b.pending = false; this.spawnFromDock(b.a); b.a = null; }
+        else { b.x += dx / d * sp; b.y += dy / d * sp; b.v = dx >= 0 ? Math.abs(b.v) : -Math.abs(b.v); }
+      }
+    }
+  }
+
+  launchBoat(bt, look) {
+    bt.state = 'out'; bt.a = look; bt.timer = 1500 + Math.random() * 2200; bt.ty = 145 + Math.random() * 10; bt.v = (Math.random() < 0.5 ? 1 : -1) * (0.06 + Math.random() * 0.04);
+  }
+
+  spawnRoleWalker(role) {
+    var dir = Math.random() < 0.5 ? 1 : -1;
+    var look = this.lookFor(false);
+    this.walkers.push({ x: dir > 0 ? -8 : this.W + 8, y: 165 + Math.floor(Math.random() * 2), dir: dir, v: 0.2 + Math.random() * 0.06, jog: false, ph: Math.random() * 4, look: look, partner: null, dog: null, state: 'walk', t: 0, seen: { busker: 1, statue: 1, mascot: 1, crew: 1, chess: 1 }, role: role });
+  }
+
+  spawnFromDock(look) {
+    if (!look) return;
+    var dir = Math.random() < 0.5 ? 1 : -1;
+    this.walkers.push({ x: this.DX - 1, y: 156, ty: 165 + Math.floor(Math.random() * 2), dir: dir, v: 0.2, jog: false, ph: 0, look: look, partner: null, dog: null, state: 'fromDock', t: 0, seen: {} });
+  }
+
+  bridgeFeet(x) {
+    if (x < 54 || x > 266) return 139;
+    return Math.round(142 - 8 * Math.sin(Math.PI * (x - 54) / 212)) - 1;
+  }
+
+  stepBridge() {
+    this.bridgers = this.bridgers || [];
+    var B = this.bridgers, target = this.isNight() ? 1 : Math.max(1, Math.round(this.crowd() / 2.5));
+    if (B.length < target && Math.random() < 0.003) {
+      var dir = Math.random() < 0.5 ? 1 : -1, couple = Math.random() < (this.ev().id === 'valentines' ? 0.6 : 0.15);
+      B.push({ x: dir > 0 ? -6 : this.W + 6, dir: dir, v: 0.15 + Math.random() * 0.07, ph: Math.random() * 4, look: this.lookFor(false), partner: couple ? this.lookFor(false) : null, pause: 0 });
+    }
+    for (var i = B.length - 1; i >= 0; i--) {
+      var w = B[i];
+      if (w.pause > 0) { w.pause--; continue; }
+      w.x += w.v * w.dir; w.ph += w.v * 0.6;
+      if (Math.abs(w.x - 160) < 0.2 && Math.random() < 0.5) w.pause = 180 + Math.random() * 200;
+      if (w.x < -8 || w.x > this.W + 8) B.splice(i, 1);
+    }
+  }
+
+  drawBridgers() {
+    var ctx = this.ctx, B = this.bridgers || [];
+    for (var i = 0; i < B.length; i++) {
+      var w = B[i], x = Math.round(w.x), fr = w.pause > 0 ? 0 : Math.floor(w.ph) % 2;
+      this.drawPerson(ctx, x, this.bridgeFeet(x + 1) - 5, w.look, fr, false);
+      if (w.partner) { var px = x - 4 * w.dir; this.drawPerson(ctx, px, this.bridgeFeet(px + 1) - 5, w.partner, 1 - fr, false); }
+    }
+  }
+
+  glowSprite(R, color) {
+    this._glow = this._glow || {};
+    var key = color + R, g = this._glow[key];
+    if (!g) {
+      g = document.createElement('canvas'); g.width = g.height = R * 2 + 1;
+      var x = g.getContext('2d');
+      for (var dy = -R; dy <= R; dy++) for (var dx = -R; dx <= R; dx++) {
+        var d = Math.sqrt(dx * dx + dy * dy) / R;
+        if (d >= 1) continue;
+        x.globalAlpha = Math.pow(1 - d, 2.2); x.fillStyle = color; x.fillRect(dx + R, dy + R, 1, 1);
+      }
+      this._glow[key] = g;
+    }
+    return g;
+  }
+
+  glow(cx, cy, R, color, a) {
+    if (a <= 0.003) return;
+    var g = this.glowSprite(R, color);
+    var ctx = this.ctx, prev = ctx.globalAlpha;
+    ctx.globalAlpha = Math.min(1, a); ctx.drawImage(g, Math.round(cx - R), Math.round(cy - R)); ctx.globalAlpha = prev;
+  }
+
+  drawParty() {
+    var A = this.evAlphaFor('christmas'), n = this.nightAmt || 0;
+    if (A <= 0 || n < 0.3) return;
+    var ctx = this.ctx, t = (this.prevT || 0) / 1000, beat = Math.floor(t * 2.2);
+    var cols = ['#e0302a', '#2e9e4b', '#b04fe0', '#4f8fe0', '#f5c400', '#ff5fa2'];
+    var a = A * Math.min(1, (n - 0.3) / 0.4);
+    this.glow(229, 72, 5, cols[beat % cols.length], 0.35 * a);
+    ctx.globalAlpha = a;
+    for (var x = 223; x < 236; x += 2) {
+      var c = cols[(beat + x * 3) % cols.length];
+      if (Math.floor(t * 8 + x) % 7 === 0) c = '#ffffff';
+      ctx.fillStyle = c; ctx.fillRect(x, 72, 1, 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  drawTimesSq() {
+    var ctx = this.ctx, t = (this.prevT || 0) / 1000, n = this.nightAmt || 0;
+    var ADS = [
+      { bg: '#f5c400', px: [[1, 1, '#c9884a'], [2, 1, '#c9884a'], [3, 1, '#c9884a'], [4, 1, '#c9884a'], [5, 1, '#c9884a'], [1, 2, '#2e9e4b'], [2, 2, '#6b3a1a'], [3, 2, '#6b3a1a'], [4, 2, '#6b3a1a'], [5, 2, '#2e9e4b'], [2, 3, '#c9884a'], [3, 3, '#c9884a'], [4, 3, '#c9884a']] },
+      { bg: '#1f5fa6', px: [[2, 0, '#ffffff'], [3, 0, '#ffffff'], [4, 0, '#ffffff'], [2, 1, '#ffffff'], [3, 1, 'blink'], [4, 1, '#ffffff'], [2, 2, '#ffffff'], [3, 2, 'blink'], [4, 2, '#ffffff'], [2, 3, '#ffffff'], [3, 3, '#ffffff'], [4, 3, '#ffffff']] },
+      { bg: '#e0302a', flash: true },
+      { bg: '#2e9e6b', px: [[4, 0, '#ffffff'], [2, 1, '#e0302a'], [3, 1, '#ffffff'], [4, 1, '#e0302a'], [2, 2, '#e0302a'], [3, 2, '#ffffff'], [4, 2, '#e0302a'], [2, 3, '#e0302a'], [3, 3, '#e0302a'], [4, 3, '#e0302a']] },
+      { bg: '#f08aa8', eye: true },
+      { bg: '#8a4fc0', noise: true },
+      { bg: '#4fb3d9', px: [[1, 2, '#ffffff'], [2, 1, '#ffffff'], [3, 2, '#ffffff'], [4, 1, '#ffffff'], [5, 2, '#ffffff'], [1, 3, '#1f5fa6'], [5, 3, '#1f5fa6']] }
+    ];
+    var spill = null;
+    for (var i = 0; i < 4; i++) {
+      var slot = Math.floor(t / (1.6 + i * 0.45) + i * 1.7);
+      var ad = ADS[(slot * 3 + i * 5) % ADS.length];
+      var x0 = 147, y0 = 82 + i * 6;
+      this.glow(x0 + 3, y0 + 2, 7, ad.bg, 0.7 * n);
+      var flashOn = Math.floor(t * 6) % 2;
+      ctx.fillStyle = ad.flash && flashOn ? '#ffffff' : ad.bg; ctx.fillRect(x0, y0, 7, 4);
+      if (ad.flash) { ctx.fillStyle = flashOn ? '#e0302a' : '#ffffff'; ctx.fillRect(x0 + 1, y0 + 1, 2, 2); ctx.fillRect(x0 + 4, y0 + 1, 2, 2); }
+      if (ad.noise) for (var q = 0; q < 10; q++) { ctx.fillStyle = ['#f5c400', '#4fb3d9', '#ffffff', '#e05a33'][Math.floor(Math.random() * 4)]; ctx.fillRect(x0 + Math.floor(Math.random() * 7), y0 + Math.floor(Math.random() * 4), 1, 1); }
+      if (ad.eye) { var shut = Math.floor(t * 2.3) % 5 === 0; ctx.fillStyle = '#ffffff'; if (shut) ctx.fillRect(x0 + 1, y0 + 2, 5, 1); else { ctx.fillRect(x0 + 1, y0 + 1, 5, 2); ctx.fillStyle = '#1c1c1c'; ctx.fillRect(x0 + 3 + Math.round(Math.sin(t * 1.7)), y0 + 1, 1, 2); } }
+      if (ad.px) for (var k = 0; k < ad.px.length; k++) { var c = ad.px[k][2]; if (c === 'blink') c = Math.floor(t * 3) % 2 ? '#7fd6ff' : '#1f5fa6'; ctx.fillStyle = c; ctx.fillRect(x0 + ad.px[k][0], y0 + ad.px[k][1], 1, 1); }
+      if (i === 1) spill = ad.bg;
+    }
+    var off = Math.floor(t * 8);
+    for (var x = 0; x < 7; x++) { ctx.fillStyle = (x + off) % 3 === 0 ? '#ff4040' : ((x + off) % 3 === 1 ? '#f5c400' : '#1c1c1c'); ctx.fillRect(147 + x, 106, 1, 1); }
+    if (spill) this.glow(151, 95, 20, spill, 0.28 * n);
+  }
+
+  drawBallDrop() {
+    var A = this.evAlphaFor('newyear'), n = this.nightAmt || 0, ctx = this.ctx;
+    if (A <= 0 || n < 0.05) return;
+    var p = Math.min(1, (this.nightClock || 0) / 10000);
+    var by = Math.round(62 + p * 13);
+    ctx.globalAlpha = A * n;
+    var cols = ['#ffffff', '#bfe8ff', '#f5e26a', '#f08aa8'];
+    for (var dy = 0; dy < 3; dy++) for (var dx = 0; dx < 3; dx++) { if ((dx === 0 || dx === 2) && (dy === 0 || dy === 2)) continue; ctx.fillStyle = cols[Math.floor(Math.random() * cols.length)]; ctx.fillRect(150 + dx, by + dy - 1, 1, 1); }
+    this.glow(151, by, 5, '#fff3c4', 0.5 * A * n);
+    ctx.globalAlpha = 1;
+    if (p >= 1 && !this.dropped && this.evId === 'newyear') {
+      this.dropped = true;
+      var cols2 = ['#f5c400', '#ffffff', '#f08aa8', '#7fd6ff', '#9fe870'];
+      for (var k = 0; k < 7; k++) {
+        var parts = [];
+        for (var i = 0; i < 18; i++) { var a = i / 18 * Math.PI * 2; parts.push([Math.cos(a), Math.sin(a)]); }
+        this.fireworks.push({ x: 40 + Math.random() * 240, y: 20 + Math.random() * 45, t: -k * 0.12, col: cols2[k % cols2.length], parts: parts, s: 10 + Math.random() * 10 });
+      }
+      for (var c = 0; c < 60; c++) this.flakes.push({ x: Math.random() * this.W, y: -Math.random() * 60, v: 0.25 + Math.random() * 0.3, ph: Math.random() * 6, c: cols2[c % cols2.length], dying: true });
+    }
+  }
+
+  drawSkyFx() {
+    var ctx = this.ctx, i, j, n = this.nightAmt || 0;
+    for (i = 0; i < this.fireworks.length; i++) {
+      var f = this.fireworks[i]; if (f.t < 0) continue;
+      var r = Math.sqrt(f.t) * f.s;
+      this.glow(f.x, f.y + f.t * f.t * 6, Math.max(3, Math.round(r + 6)), f.col, 0.45 * Math.max(0, 1 - f.t) * n);
+      ctx.globalAlpha = Math.max(0, 1 - f.t) * n;
+      ctx.fillStyle = f.col;
+      for (j = 0; j < f.parts.length; j++) ctx.fillRect(Math.round(f.x + f.parts[j][0] * r), Math.round(f.y + f.parts[j][1] * r + f.t * f.t * 6), 1, 1);
+      if (f.t < 0.15) { ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(f.x), Math.round(f.y), 1, 1); }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  drawESBLights() {
+    var cur = this.evById(this.evId), prev = this.prevEvId ? this.evById(this.prevEvId) : null, f = this.evFade ?? 1;
+    if (prev && f < 1) this.drawESBFor(prev, 1 - f);
+    if (cur) this.drawESBFor(cur, prev && f < 1 ? f : 1);
+  }
+
+  drawESBFor(e, A) {
+    var n = this.nightAmt || 0, ctx = this.ctx;
+    if (n < 0.02 || A <= 0) return;
+    this.glow(230, 34, 24, e.esb[1 % e.esb.length], 0.3 * n * A);
+    this.glow(230, 32, 12, e.esb[1 % e.esb.length], 0.55 * n * A);
+    this.glow(230, 40, 9, e.esb[0], 0.45 * n * A);
+    ctx.globalAlpha = n * A;
+    var tiers = [[226, 38, 9, 4], [227, 32, 7, 6], [228, 27, 5, 5], [229, 22, 3, 5]];
+    var cols = e.esb, t = (this.prevT || 0) / 1000;
+    for (var i = 0; i < tiers.length; i++) {
+      var T = tiers[i];
+      if (e.rainbow) { for (var yy = 0; yy < T[3]; yy++) { ctx.fillStyle = cols[(yy + i * 2) % cols.length]; ctx.fillRect(T[0], T[1] + yy, T[2], 1); } }
+      else { ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(T[0], T[1], T[2], T[3]); }
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(T[0] + T[2] - 2, T[1], 2, T[3]);
+    }
+    if (e.sparkle) { ctx.fillStyle = '#ffffff'; for (var s = 0; s < 4; s++) ctx.fillRect(225 + Math.floor(Math.random() * 11), 22 + Math.floor(Math.random() * 24), 1, 1); }
+    if (Math.floor(t * 1.2) % 2) { ctx.fillStyle = '#ff4040'; ctx.fillRect(230, 8, 1, 1); }
+    ctx.globalAlpha = 1;
+  }
+
+  drawParkFx() {
+    var ctx = this.ctx, e = this.ev(), n = this.nightAmt || 0, i, self = this, t = (this.prevT || 0) / 1000;
+    var D = { lights: this.buildCanopy().lights };
+    var xa = this.evAlphaFor('christmas');
+    if (xa > 0 && D.lights) {
+      var cols = ['#e0302a', '#2e9e4b', '#f5c400', '#4f8fe0'];
+      ctx.globalAlpha = (0.45 + 0.55 * n) * xa;
+      var ga = ctx.globalAlpha;
+      for (i = 0; i < D.lights.length; i++) { if ((i + Math.floor(t * 2)) % 3 === 0) continue; this.glow(D.lights[i][0], D.lights[i][1], 2, cols[i % 4], 0.6 * n * xa); }
+      ctx.globalAlpha = ga;
+      for (i = 0; i < D.lights.length; i++) { if ((i + Math.floor(t * 2)) % 3 === 0) continue; ctx.fillStyle = cols[i % 4]; ctx.fillRect(D.lights[i][0], D.lights[i][1], 1, 1); }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  drawShoreFx() {
+    var ctx = this.ctx, e = this.ev(), n = this.nightAmt || 0, i, self = this;
+    var ha = this.evAlphaFor('halloween');
+    if (ha > 0) {
+      ctx.globalAlpha = ha;
+      var jk = [24, 134, 258, 312];
+      for (i = 0; i < jk.length; i++) {
+        var jx = jk[i];
+        ctx.fillStyle = this.dim('#e3842f'); ctx.fillRect(jx, 162, 3, 2); ctx.fillStyle = '#2e6b2e'; ctx.fillRect(jx + 1, 161, 1, 1);
+        ctx.fillStyle = n > 0.3 ? '#ffe08a' : '#3a2a1a'; ctx.fillRect(jx, 162, 1, 1); ctx.fillRect(jx + 2, 162, 1, 1);
+        if (n > 0.3) this.glow(jx + 1, 162, 4, '#ffa03c', 0.45 * n * ha);
+      }
+      ctx.globalAlpha = 1;
+    }
+    for (i = 0; i < (this.boats || []).length; i++) {
+      var b = this.boats[i]; if (b.al <= 0) continue;
+      var bx = Math.round(b.x), by = Math.round(b.y), oar = b.state === 'docked' ? 0 : Math.floor(b.ph) % 2;
+      var dot = function (c, x, y) { ctx.fillStyle = self.dim(c); ctx.fillRect(x, y, 1, 1); };
+      ctx.globalAlpha = b.al * 0.35;
+      ctx.fillStyle = self.dim('#6b4424'); ctx.fillRect(bx + 1, by + 3, 5, 1);
+      if (b.a) { ctx.fillStyle = self.dim(b.a.top); ctx.fillRect(bx + 2, by + 4, 3, 1); ctx.fillStyle = self.dim(b.a.skin); ctx.fillRect(bx + 3, by + 5, 1, 1); }
+      ctx.globalAlpha = b.al;
+      for (var k = 0; k < 7; k++) dot('#8a5a30', bx + k, by + 1);
+      for (k = 1; k < 6; k++) dot('#6b4424', bx + k, by + 2);
+      if (b.a) {
+        dot(b.a.hair, bx + 3, by - 2); dot(b.a.skin, bx + 3, by - 1); dot(b.a.top, bx + 2, by); dot(b.a.top, bx + 3, by); dot(b.a.top, bx + 4, by);
+        dot('#c9a050', oar ? bx + 1 : bx, by + (oar ? 1 : 2)); dot('#c9a050', oar ? bx + 5 : bx + 6, by + (oar ? 1 : 2));
+        if (n < 0.5 && b.state !== 'docked') { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(bx - (b.v > 0 ? 2 : -8), by + 2, 2, 1); }
+      } else { dot('#5a4028', bx - 1, by + 1); }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  drawEventProps() {
+    if (this.prevEvId && (this.evFade ?? 1) < 1) this.drawEventPropsFor(this.prevEvId, 1 - this.evFade);
+    this.drawEventPropsFor(this.evId, this.prevEvId && (this.evFade ?? 1) < 1 ? this.evFade : 1);
+  }
+
+  drawEventPropsFor(e, A) {
+    if (!e || A <= 0) return;
+    var ctx = this.ctx, self = this, t = (this.prevT || 0) / 1000, n = this.nightAmt || 0;
+    var dot = function (c, x, y) { ctx.fillStyle = self.dim(c); ctx.fillRect(x, y, 1, 1); };
+    var lamps = this.lampXs(), i, r;
+    ctx.globalAlpha = A;
+    var flag = {
+      stpatricks: [['#2e9e4b'], ['#3fbf5f'], ['#2e9e4b'], ['#ffffff']],
+      pride: [['#e0302a'], ['#f5a030'], ['#f5e26a'], ['#2e9e4b'], ['#1f5fa6'], ['#8a4fc0']],
+      july4: [['#1f5fa6', '#e0302a'], ['#1f5fa6', '#ffffff'], ['#e0302a', '#e0302a'], ['#ffffff', '#ffffff'], ['#e0302a', '#e0302a']],
+      valentines: [['#f08aa8', '#f08aa8'], ['#e0305a', '#e0305a'], ['#f08aa8', '#f08aa8']],
+      easter: [['#f4b6c8'], ['#b58ae0'], ['#f5e26a'], ['#9fd6c0']],
+      marathon: [['#1f5fa6', '#1f5fa6'], ['#e3842f', '#e3842f'], ['#1f5fa6', '#1f5fa6']],
+      halloween: [['#e3842f', '#e3842f'], ['#3a2a4a', '#3a2a4a'], ['#e3842f', '#e3842f']],
+      thanksgiving: [['#c8512b', '#c8512b'], ['#e3842f', '#e3842f'], ['#7a5a3a', '#7a5a3a']],
+      blossom: [['#f4b6c8', '#f4b6c8'], ['#ffffff', '#ffffff'], ['#f4b6c8', '#f4b6c8']],
+      newyear: [['#f5c400', '#f5c400'], ['#ffffff', '#ffffff'], ['#f5c400', '#f5c400']]
+    }[e];
+    for (i = 0; i < lamps.length; i++) {
+      var lx = lamps[i] + 1;
+      if (flag) for (r = 0; r < flag.length; r++) for (var c = 0; c < 2; c++) dot(flag[r][Math.min(c, flag[r].length - 1)], lx + c, 160 + r);
+      if (e === 'christmas') {
+        dot('#2e7a3a', lx - 2, 161); dot('#2e7a3a', lx - 1, 160); dot('#2e7a3a', lx, 160); dot('#2e7a3a', lx + 1, 161); dot('#2e7a3a', lx - 1, 162); dot('#2e7a3a', lx, 162);
+        dot('#e0302a', lx - 1, 163); dot('#e0302a', lx, 163);
+      }
+    }
+    if (e === 'christmas') {
+      var cx = 34, base = 156;
+      for (r = 0; r < 18; r++) { var half = Math.floor(r / 2.4) + 1; for (var dx = -half; dx <= half; dx++) dot(r % 4 === 3 ? '#1f6a33' : '#2e8a45', cx + dx, base - 18 + r); }
+      dot('#6b4a2a', cx, base); dot('#6b4a2a', cx, base + 1);
+      dot(Math.floor(t * 2) % 2 ? '#f5c400' : '#fff3a0', cx, base - 19); dot('#f5c400', cx - 1, base - 18); dot('#f5c400', cx + 1, base - 18);
+      var bulbs = ['#e0302a', '#f5c400', '#4f8fe0', '#ffffff'];
+      ctx.globalAlpha = (0.6 + 0.4 * n) * A;
+      for (r = 0; r < 14; r++) { var by = base - 16 + r, bx = cx + Math.round(Math.sin(r * 1.7) * Math.min(5, r / 2.4)); if ((r + Math.floor(t * 3)) % 4 === 0) continue; this.glow(bx, by, 2, bulbs[r % 4], 0.6 * n * A); ctx.globalAlpha = (0.6 + 0.4 * n) * A; dot(bulbs[r % 4], bx, by); }
+      this.glow(cx, base - 19, 4, '#f5e26a', 0.6 * n * A); ctx.globalAlpha = (0.6 + 0.4 * n) * A;
+      ctx.globalAlpha = A;
+    }
+    if (e === 'easter' && !this.isNight()) {
+      var eggs = [[150, 176], [168, 178], [182, 175], [236, 177], [120, 178]], ec = ['#f4b6c8', '#b58ae0', '#f5e26a', '#9fd6c0', '#7fc8f0'];
+      for (i = 0; i < eggs.length; i++) { dot(ec[i], eggs[i][0], eggs[i][1]); dot(ec[i], eggs[i][0], eggs[i][1] - 1); }
+    }
+    if (e === 'marathon') {
+      var fx0 = 136, fx1 = 176;
+      for (r = 0; r < 12; r++) { dot('#1c1c1c', fx0, 155 + r); dot('#1c1c1c', fx1, 155 + r); }
+      for (i = fx0; i <= fx1; i++) { dot(i % 4 < 2 ? '#1f5fa6' : '#e3842f', i, 154); dot(i % 4 < 2 ? '#e3842f' : '#1f5fa6', i, 155); }
+    }
+    if (e === 'heat' && !this.isNight()) {
+      var hyx = 178;
+      dot('#c42a2a', hyx, 166); dot('#c42a2a', hyx, 165); dot('#c42a2a', hyx - 1, 165); dot('#c42a2a', hyx + 1, 165); dot('#a02020', hyx, 164);
+      ctx.globalAlpha = 0.8 * A;
+      for (i = 0; i < 10; i++) { var u = ((t * 1.3 + i / 10) % 1); dot('#bfe3ff', hyx + 2 + Math.round(u * 14), 165 - Math.round(Math.sin(Math.PI * u) * 7)); }
+      ctx.globalAlpha = A;
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  drawBalloons() {
+    var ctx = this.ctx, self = this;
+    var dot = function (c, x, y, w, h) { ctx.fillStyle = self.dim(c); ctx.fillRect(Math.round(x), Math.round(y), w || 1, h || 1); };
+    for (var i = 0; i < (this.balloons || []).length; i++) {
+      var b = this.balloons[i]; if (b.x < -40 || b.x > this.W + 40) continue;
+      var x = b.x, y = b.y + Math.sin((this.prevT || 0) / 900 + i) * 1.5;
+      ctx.globalAlpha = 0.6; for (var r = 0; r < 4; r++) dot('#6b6b6b', x + 2 + r * 4, y + 9, 1, 30); ctx.globalAlpha = 1;
+      if (b.kind === 'pigeon') {
+        dot('#a3a8b8', x, y + 3, 16, 6); dot('#a3a8b8', x + 12, y, 6, 6); dot('#5d6275', x + 3, y + 1, 7, 3);
+        dot('#4fb390', x + 12, y + 5, 4, 2); dot('#9a6bc0', x + 14, y + 4, 2, 1); dot('#1c1c1c', x + 15, y + 2); dot('#f0a848', x + 18, y + 3, 2, 1);
+        dot('#3a3d4d', x - 3, y + 4, 3, 3); dot('#e08a7a', x + 5, y + 9, 1, 2); dot('#e08a7a', x + 10, y + 9, 1, 2);
+      } else {
+        for (var row = 0; row < 12; row++) dot(row < 2 ? '#c9884a' : '#f5c400', x + row * 0.5, y + row - 1, 16 - row, 1);
+        dot('#e0302a', x + 4, y + 3, 2, 2); dot('#e0302a', x + 9, y + 4, 2, 2); dot('#e0302a', x + 6, y + 7, 2, 2);
+      }
+    }
+  }
+
+  paintScene(season) {
+    var W = this.W, H = this.H, S = this.seasonCfg(season);
+    var seed = 7;
+    var rnd = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    var ps = 99;
+    var rp = function () { ps = (ps * 16807) % 2147483647; return ps / 2147483647; };
+    var y, xx, i, wins = [], winsFar = [], lights = [];
+    var sk = document.createElement('canvas'); sk.width = W; sk.height = H;
+    var x = sk.getContext('2d');
+    for (y = 0; y < 134; y++) for (xx = 0; xx < W; xx++) {
+      var v = (y / 134) * (S.sky.length - 1) + (rnd() - 0.5) * 1.1;
+      x.fillStyle = S.sky[Math.max(0, Math.min(S.sky.length - 1, Math.round(v)))]; x.fillRect(xx, y, 1, 1);
+    }
+    var far = document.createElement('canvas'); far.width = W; far.height = H;
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
+    var xNear = c.getContext('2d');
+    x = far.getContext('2d');
+    seed = 7;
+    var BASE = 124, esbDone = false;
+    var layers = [['#a9b4bf', 22, 46, '#d7e1ea', '#97a3ae'], ['#7d8894', 8, 26, '#c9d6e2', '#6c7783']];
+    for (var L = 0; L < 2; L++) {
+      if (L === 1) x = xNear;
+      var WL = L === 0 ? winsFar : wins;
+      xx = 0;
+      while (xx < W) {
+        var bw = 6 + Math.floor(rnd() * 14), bh = layers[L][1] + Math.floor(rnd() * layers[L][2]), top = BASE - bh;
+        if (L === 1 && xx + bw > 12 && xx < 62) bh = Math.min(bh, 10), top = BASE - bh;
+        if (L === 0 && xx + bw > 212 && xx < 248) { if (L === 0 && !esbDone && xx + bw > 212) { this.paintESB(x, S, winsFar); esbDone = true; } xx += bw; continue; }
+        x.fillStyle = layers[L][0]; x.fillRect(xx, top, bw, BASE - top);
+        x.fillStyle = layers[L][4]; x.fillRect(xx + bw - 2, top, 2, BASE - top);
+        if (S.snow) { x.fillStyle = '#ffffff'; x.fillRect(xx, top, bw, 1); }
+        if (rnd() < 0.15) { x.fillStyle = layers[L][0]; x.fillRect(xx + Math.floor(bw / 2), top - 6, 1, 6); }
+        x.fillStyle = layers[L][3];
+        for (var wy = top + 3; wy < BASE - 3; wy += 4) for (var wx = xx + 2; wx < xx + bw - 2; wx += 3) { if (rnd() < 0.4) x.fillRect(wx, wy, 1, 1); else if (L === 1 || rnd() < 0.5) WL.push([wx, wy]); }
+        xx += bw + (rnd() < 0.3 ? 1 : 0);
+      }
+      if (L === 0 && !esbDone) { this.paintESB(x, S, winsFar); esbDone = true; }
+      if (L === 0) { this.paintTimesSq(x, S, winsFar); this.paintPlaza(x, S, winsFar); }
+    }
+    for (y = 124; y < 132; y++) for (xx = 0; xx < W; xx++) {
+      var gcol = S.snow ? (rnd() < 0.3 ? '#d5dee6' : '#e6edf2') : (season === 'fall' ? (rnd() < 0.3 ? '#6f7a3e' : '#7d8846') : (rnd() < 0.3 ? '#3f7a3a' : '#4a8a42'));
+      x.fillStyle = gcol; x.fillRect(xx, y, 1, 1);
+    }
+    var C = this.buildCanopy();
+    x.fillStyle = '#5a4e45';
+    for (i = 0; i < C.trunks.length; i++) x.fillRect(C.trunks[i][0], C.trunks[i][1], 1, C.trunks[i][2]);
+    var water = S.snow ? ['#eef4f8', '#dfe9f1', '#cfdeea'] : ['#5f9fd9', '#4a8bcb', '#3a78b8', '#2f6aa8'];
+    var LX0 = this.LX0, LX1 = this.LX1, M = this.lakeMask();
+    var bk = document.createElement('canvas'); bk.width = W; bk.height = H;
+    var bx = bk.getContext('2d');
+    var put = function (col, px, py, bankToo) { x.fillStyle = col; x.fillRect(px, py, 1, 1); if (bankToo) { bx.fillStyle = col; bx.fillRect(px, py, 1, 1); } };
+    for (y = 132; y < 161; y++) for (xx = 0; xx < W; xx++) {
+      if (M.water(xx, y)) {
+        var wv = ((y - 132) / 28) * (water.length - 1) + (rnd() - 0.5) * 1.2;
+        put(water[Math.max(0, Math.min(water.length - 1, Math.round(wv)))], xx, y, false);
+        continue;
+      }
+      var edge = M.water(xx - 1, y) || M.water(xx + 1, y) || M.water(xx, y - 1) || M.water(xx, y + 1);
+      var near2 = !edge && (M.water(xx - 2, y) || M.water(xx + 2, y) || M.water(xx, y + 2));
+      var col;
+      if (edge) col = S.snow ? (rnd() < 0.5 ? '#f4f7fa' : '#c9d3dc') : (rnd() < 0.45 ? '#8f969c' : (rnd() < 0.5 ? '#a7adb2' : '#b9ae94'));
+      else if (near2 && rnd() < 0.35) col = S.snow ? '#e3e9ef' : (rnd() < 0.5 ? '#9a9f94' : '#b9ae94');
+      else col = rnd() < 0.3 ? S.grass[1] : S.grass[0];
+      put(col, xx, y, xx >= LX0 - 4 && xx <= LX1 + 4);
+      if (edge && !S.snow && !S.bare && rnd() < 0.12 && y > 136) { put(rnd() < 0.5 ? '#3f7a3a' : '#5a8f3e', xx, y - 1, xx >= LX0 - 4 && xx <= LX1 + 4); if (rnd() < 0.5) put('#6b8f3e', xx, y - 2, xx >= LX0 - 4 && xx <= LX1 + 4); }
+    }
+    if (S.snow) { x.fillStyle = '#b5c7d8'; for (i = 0; i < 12; i++) { var kx = LX0 + 18 + Math.floor(rnd() * (LX1 - LX0 - 40)), ky = 136 + Math.floor(rnd() * 20); for (var kk = 0; kk < 5; kk++) if (M.water(kx + kk, ky + (kk % 2))) x.fillRect(kx + kk, ky + (kk % 2), 1, 1); } }
+    this._banks = bk;
+    for (y = 160; y < H; y++) for (xx = 0; xx < W; xx++) { x.fillStyle = rnd() < 0.3 ? S.grass[1] : S.grass[0]; x.fillRect(xx, y, 1, 1); }
+    var pathA = S.snow ? '#e8edf2' : '#d9d1c0', pathB = S.snow ? '#d3dbe3' : '#c3b9a5';
+    for (y = 166; y < 173; y++) for (xx = 0; xx < W; xx++) { x.fillStyle = rnd() < 0.25 ? pathB : pathA; x.fillRect(xx, y, 1, 1); }
+    if (season === 'fall') for (i = 0; i < 60; i++) { x.fillStyle = S.tree[Math.floor(rnd() * 3)]; x.fillRect(Math.floor(rnd() * W), 161 + Math.floor(rnd() * 19), 1, 1); }
+    var DX = this.DX;
+    x.fillStyle = '#5a4028'; x.fillRect(DX - 7, 157, 1, 3); x.fillRect(DX + 7, 157, 1, 3); x.fillRect(DX, 157, 1, 3);
+    for (var dpx = DX - 8; dpx <= DX + 8; dpx++) { x.fillStyle = dpx % 3 === 0 ? '#7a5a38' : '#8a6a44'; x.fillRect(dpx, 155, 1, 2); }
+    for (var dpy = 157; dpy < 166; dpy++) { x.fillStyle = dpy % 2 ? '#8a6a44' : '#7a5a38'; x.fillRect(DX - 1, dpy, 3, 1); }
+    if (S.snow) { x.fillStyle = '#ffffff'; x.fillRect(DX - 8, 154, 17, 1); }
+    bx.drawImage(c, DX - 9, 153, 19, 13, DX - 9, 153, 19, 13);
+    var lamps = this.lampXs();
+    for (var l = 0; l < lamps.length; l++) {
+      x.fillStyle = '#2f353c'; x.fillRect(lamps[l], 160, 1, 7);
+      x.fillStyle = '#e9eef2'; x.fillRect(lamps[l] - 1, 158, 3, 2);
+      if (S.snow) { x.fillStyle = '#ffffff'; x.fillRect(lamps[l] - 1, 157, 3, 1); }
+    }
+    var fc = document.createElement('canvas'); fc.width = W; fc.height = H;
+    var fx = fc.getContext('2d');
+    var BX0 = 54, BX1 = 266;
+    var arc = function (px) { return Math.sin(Math.PI * (px - BX0) / (BX1 - BX0)); };
+    for (xx = BX0; xx <= BX1; xx++) {
+      var dk = Math.round(142 - 8 * arc(xx));
+      fx.fillStyle = '#e9e4d6'; fx.fillRect(xx, dk, 1, 2);
+      fx.fillStyle = '#c9c3b3'; fx.fillRect(xx, dk + 2, 1, 1);
+      fx.fillStyle = S.snow ? '#ffffff' : '#f6f2e8'; fx.fillRect(xx, dk - 3, 1, 1);
+      if (xx % 3 === 0) { fx.fillStyle = '#d8d2c2'; fx.fillRect(xx, dk - 2, 1, 2); }
+      var under = Math.round(151 - 13 * arc(xx));
+      if (under > dk + 2 && xx > LX0 - 2 && xx < LX1 + 2) { fx.fillStyle = '#d8d2c2'; fx.fillRect(xx, under, 1, 1); }
+    }
+    fx.fillStyle = '#b9b4a6'; fx.fillRect(BX0 - 4, 140, 7, 10); fx.fillRect(BX1 - 2, 140, 7, 10);
+    fx.fillStyle = '#9b968a'; fx.fillRect(BX0 - 4, 140, 1, 10); fx.fillRect(BX1 + 4, 140, 1, 10);
+    fx.fillStyle = '#d8d2c2'; fx.fillRect(BX0 - 5, 138, 9, 2); fx.fillRect(BX1 - 3, 138, 9, 2);
+    return { sky: sk, far: far, bg: c, fg: fc, banks: this._banks, wins: wins, winsFar: winsFar, lights: lights };
+  }
+
+  buildCanopy() {
+    if (this.canopy) return this.canopy;
+    var ps = 99;
+    var rp = function () { ps = (ps * 16807) % 2147483647; return ps / 2147483647; };
+    var px = [], trunks = [], W = this.W, ti = 0;
+    var add = function (cx, cy, r, ymax, cherry) {
+      for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++) if (dx * dx + dy * dy <= r * r && cy + dy < ymax) {
+        var r1 = rp() * 0.6;
+        px.push({ x: cx + dx, y: cy + dy, shade: (dx + dy < -r * 0.5) ? 0 : (rp() < 0.25 ? 1 : 2), branch: rp() < 0.22, r1: r1, r2: Math.min(0.98, r1 + 0.25 + rp() * 0.4), rb: rp() * 0.45, cherry: cherry, h: rp(), light: rp() < 0.08 });
+      }
+    };
+    for (var tx = -4; tx < W + 4; tx += 6) {
+      var cx = tx + Math.floor(rp() * 3), cy = 121 + Math.floor(rp() * 5), r = 5 + Math.floor(rp() * 4);
+      trunks.push([cx, cy, 132 - cy]);
+      add(cx, cy, r, 132, ti % 3 === 0); ti++;
+    }
+    var bush = [[8, 140, 6], [26, 147, 5], [292, 146, 6], [312, 138, 5]];
+    for (var i = 0; i < bush.length; i++) { trunks.push([bush[i][0], bush[i][1], 160 - bush[i][1]]); add(bush[i][0], bush[i][1], bush[i][2], 160, i % 2 === 0); }
+    var lights = [];
+    for (i = 0; i < px.length; i++) if (px[i].light) lights.push([px[i].x, px[i].y]);
+    this.canopy = { px: px, trunks: trunks, lights: lights };
+    return this.canopy;
+  }
+
+  seasonProgress() {
+    var s = this.state || {};
+    var within = s.auto === false ? 0.5 : (s.night ? (28000 + this.autoClock) / 42000 : this.autoClock / 42000);
+    return Math.max(0, Math.min(0.999, ((s.event || 0) + Math.min(1, within)) / 3));
+  }
+
+  leafColor(p, season, sp) {
+    var SUM = ['#56a24a', '#43893c', '#356f31'], SPR = ['#9ad66f', '#7cc25c', '#68ad4f'], FALL = ['#f2c230', '#e3842f', '#c8512b', '#b8432a'];
+    if (season === 'summer') return SUM[p.shade];
+    if (season === 'fall') {
+      if (sp < p.r1 * 0.85) return SUM[p.shade];
+      if (sp < p.r2) return FALL[Math.floor(p.h * 4)];
+      return p.branch ? '#6b5d52' : null;
+    }
+    if (season === 'winter') return p.branch ? (p.shade === 0 && p.h < 0.5 ? '#ffffff' : '#6b5d52') : null;
+    if (sp < p.rb) return p.branch ? '#6b5d52' : (sp > p.rb - 0.08 && p.h < 0.3 ? '#b8de8a' : null);
+    if (p.cherry && sp < p.rb + 0.4) return p.h < 0.35 ? '#ffffff' : (p.h < 0.7 ? '#f4b6c8' : '#f8d3de');
+    return p.h < (sp - 0.6) * 2.5 ? SUM[p.shade] : SPR[p.shade];
+  }
+
+  renderFoliage(force) {
+    var t = this.prevT || 0;
+    if (!force && this.foliT && t - this.foliT < 250) return;
+    this.foliT = t;
+    var C = this.buildCanopy(), season = this.season || 'winter', sp = this.seasonProgress();
+    if (!this.foliD) {
+      this.foliD = document.createElement('canvas'); this.foliD.width = this.W; this.foliD.height = this.H;
+      this.foliN = document.createElement('canvas'); this.foliN.width = this.W; this.foliN.height = this.H;
+    }
+    var xd = this.foliD.getContext('2d'), xn = this.foliN.getContext('2d');
+    xd.clearRect(0, 0, this.W, this.H); xn.clearRect(0, 0, this.W, this.H);
+    var nightCache = this._nc = this._nc || {};
+    var nightOf = function (hex) {
+      if (nightCache[hex]) return nightCache[hex];
+      var v = parseInt(hex.slice(1), 16);
+      return (nightCache[hex] = 'rgb(' + Math.round(((v >> 16) & 255) * 0.42) + ',' + Math.round(((v >> 8) & 255) * 0.5) + ',' + Math.min(255, Math.round((v & 255) * 0.72 + 8)) + ')');
+    };
+    var drops = 0;
+    for (var i = 0; i < C.px.length; i++) {
+      var p = C.px[i], col = this.leafColor(p, season, sp);
+      if (season === 'fall' && p.was && !col && drops < 6 && Math.random() < 0.5 && this.flakes) {
+        this.flakes.push({ tree: true, x: p.x, y: p.y, v: 0.05 + Math.random() * 0.06, vx: 0.05 + Math.random() * 0.12, ph: Math.random() * 6, c: p.was, wait: 0, dying: true });
+        drops++;
+      }
+      p.was = col && col !== '#6b5d52' && col !== '#ffffff' ? col : null;
+      if (!col) continue;
+      xd.fillStyle = col; xd.fillRect(p.x, p.y, 1, 1);
+      xn.fillStyle = nightOf(col); xn.fillRect(p.x, p.y, 1, 1);
+    }
+  }
+
+  lakeMask() {
+    if (this._mask) return this._mask;
+    var LX0 = this.LX0, LX1 = this.LX1, rows = {};
+    for (var y = 132; y < 161; y++) {
+      var d = Math.pow((y - 132) / 28, 1.4);
+      var e0 = Math.round(LX0 + 2 + 8 * d + 2.6 * Math.sin(y * 0.42 + 1.3) + 1.6 * Math.sin(y * 1.1) + (y > 141 && y < 147 ? 4 : 0));
+      var e1 = Math.round(LX1 - 2 - 8 * d - 2.4 * Math.sin(y * 0.37 + 0.4) - 1.5 * Math.sin(y * 0.95 + 2) - (y > 149 && y < 155 ? 3 : 0));
+      rows[y] = [e0, e1];
+    }
+    var top = function (x) { return 132 + ((x < LX0 + 18 || x > LX1 - 18) ? 1 : 0) + (Math.sin(x * 0.31) > 0.8 ? 1 : 0); };
+    var bottom = function (x) { return 159 - (Math.sin(x * 0.13 + 0.7) > 0.55 ? 1 : 0) - (Math.sin(x * 0.29) > 0.85 ? 1 : 0); };
+    this._mask = {
+      rows: rows,
+      water: function (x, y) { var r = rows[y]; return !!r && x >= r[0] && x <= r[1] && y >= top(x) && y <= bottom(x); }
+    };
+    return this._mask;
+  }
+
+  lampXs() { return [40, 110, 226, 296]; }
+
+  paintESB(x, S, wins) {
+    var R = function (x0, y0, w, h, col) { x.fillStyle = col; x.fillRect(x0, y0, w, h); };
+    var tiers = [[217, 110, 27, 14], [220, 100, 21, 10], [222, 52, 17, 48], [224, 46, 13, 6], [225, 42, 11, 4], [226, 38, 9, 4], [227, 32, 7, 6], [228, 27, 5, 5], [229, 22, 3, 5]];
+    for (var i = 0; i < tiers.length; i++) {
+      var T = tiers[i];
+      for (var xx = T[0]; xx < T[0] + T[2]; xx++) {
+        var edge = xx >= T[0] + T[2] - 3;
+        var col = edge ? '#9aa5b1' : (i === 2 && (xx - T[0]) % 2 === 1 ? '#b3bcc6' : '#cfd6dd');
+        R(xx, T[1], 1, T[3], col);
+      }
+      if (S.snow && i < 6) R(T[0], T[1], T[2], 1, '#ffffff');
+    }
+    R(230, 8, 1, 14, '#8a949e'); R(229, 20, 3, 2, '#9aa5b1');
+    var seed = 5;
+    var rnd = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    for (var yy = 54; yy < 122; yy += 3) for (var wx = 218; wx < 242; wx += 2) {
+      var inside = (yy >= 110 && wx >= 218 && wx < 241) || (yy >= 100 && yy < 110 && wx >= 221 && wx < 238) || (yy < 100 && wx >= 223 && wx < 236);
+      if (!inside) continue;
+      if (rnd() < 0.45) { x.fillStyle = '#e6edf3'; x.fillRect(wx, yy, 1, 1); } else wins.push([wx, yy]);
+    }
+  }
+
+  paintPlaza(x, S, wins) {
+    var R = function (x0, y0, w, h, col) { x.fillStyle = col; x.fillRect(x0, y0, w, h); };
+    var cream = '#d6d1c6', shade = '#b7b1a5', roof = '#86a89c', roofD = '#6c9084';
+    R(14, 92, 46, 32, cream); R(57, 92, 3, 32, shade); R(14, 118, 46, 6, '#c4beb2');
+    R(14, 92, 46, 1, '#c9c3b6');
+    for (var r = 0; r < 9; r++) { var inset = Math.floor(r / 2); R(15 + inset, 83 + r, 44 - inset * 2, 1, r % 3 === 1 ? roofD : roof); }
+    for (var dx = 19; dx < 56; dx += 4) R(dx, 88, 1, 2, cream);
+    R(13, 82, 6, 10, roof); R(55, 82, 6, 10, roof);
+    R(14, 79, 4, 3, roofD); R(15, 77, 2, 2, roofD); R(56, 79, 4, 3, roofD); R(57, 77, 2, 2, roofD);
+    R(13, 92, 6, 1, shade); R(55, 92, 6, 1, shade);
+    R(37, 74, 1, 9, '#5a5048'); R(38, 74, 3, 2, '#c42a2a');
+    if (S.snow) { R(16, 82, 42, 1, '#ffffff'); R(13, 81, 6, 1, '#ffffff'); R(55, 81, 6, 1, '#ffffff'); R(14, 76, 4, 1, '#ffffff'); R(56, 76, 4, 1, '#ffffff'); }
+    for (var yy = 95; yy < 117; yy += 3) for (var wx = 16; wx < 56; wx += 2) {
+      if (Math.abs(wx - 36) < 2 && yy > 110) continue;
+      if ((wx * 7 + yy * 3) % 5 < 2) { x.fillStyle = '#c3ccd3'; x.fillRect(wx, yy, 1, 1); } else wins.push([wx, yy]);
+    }
+    R(35, 117, 3, 7, '#8a7a62');
+  }
+
+  paintTimesSq(x, S, wins) {
+    var R = function (x0, y0, w, h, col) { x.fillStyle = col; x.fillRect(x0, y0, w, h); };
+    R(146, 78, 11, 46, '#a9b4bf'); R(154, 78, 3, 46, '#97a3ae'); R(151, 62, 1, 16, '#8a949e'); R(150, 76, 3, 2, '#97a3ae');
+    if (S.snow) R(146, 77, 11, 1, '#ffffff');
+    for (var i = 0; i < 4; i++) R(147, 82 + i * 6, 7, 4, '#2a2f38');
+    R(147, 106, 7, 1, '#1c1c1c');
+    for (var yy = 107; yy < 122; yy += 3) for (var wx = 147; wx < 155; wx += 2) wins.push([wx, yy]);
+  }
+
+  nightify(day) {
+    var seed = 31;
+    var rnd = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    var skD = this.darkenCanvas(day.sky), farD = this.darkenCanvas(day.far), bgD = this.darkenCanvas(day.bg), fgD = this.darkenCanvas(day.fg), bkD = this.darkenCanvas(day.banks);
+    var x = skD.x, d = skD.img.data, W = this.W;
+    for (var y = 0; y < 110; y++) for (var xx = 0; xx < W; xx++) {
+      var i = (y * W + xx) * 4;
+      if (d[i + 2] > d[i] * 2.2 && d[i + 2] > 110 && rnd() < 0.012) { x.fillStyle = rnd() < 0.3 ? '#fff3c4' : '#c9d6f2'; x.fillRect(xx, y, 1, 1); }
+    }
+    var mx = 108, my = 16;
+    for (var dy = -5; dy <= 5; dy++) for (var dx = -5; dx <= 5; dx++) if (dx * dx + dy * dy <= 25) {
+      x.fillStyle = (dx === 1 && dy === -1) || (dx === -2 && dy === 2) || (dx === 2 && dy === 1) ? '#d6d0bd' : '#f4f1e4';
+      x.fillRect(mx + dx, my + dy, 1, 1);
+    }
+    x = farD.x;
+    var self = this;
+    var lightUp = function (cx, list) {
+      var lit = [];
+      for (var q = 0; q < list.length; q++) if (rnd() < 0.55) lit.push([list[q][0], list[q][1], rnd() < 0.8 ? '#ffd27a' : '#fff1c2']);
+      cx.globalAlpha = 0.28;
+      for (q = 0; q < lit.length; q++) cx.drawImage(self.glowSprite(2, '#ffcf70'), lit[q][0] - 2, lit[q][1] - 2);
+      cx.globalAlpha = 1;
+      for (q = 0; q < lit.length; q++) { cx.fillStyle = lit[q][2]; cx.fillRect(lit[q][0], lit[q][1], 1, 1); }
+    };
+    lightUp(x, day.winsFar);
+    x = bgD.x;
+    lightUp(x, day.wins);
+    var lamps = this.lampXs();
+    for (var l = 0; l < lamps.length; l++) {
+      x.globalAlpha = 0.5; x.drawImage(this.glowSprite(10, '#ffe08c'), lamps[l] - 10, 159 - 10);
+      x.globalAlpha = 0.35; x.drawImage(this.glowSprite(6, '#ffe08c'), lamps[l] - 6, 169 - 6);
+      x.globalAlpha = 1;
+      x.fillStyle = '#fff2b0'; x.fillRect(lamps[l] - 1, 158, 3, 2);
+    }
+    return { sky: skD.c, far: farD.c, bg: bgD.c, fg: fgD.c, banks: bkD.c };
+  }
+
+  // Mirror rows of the canvas itself into the lake, with a per-row ripple.
+  reflect(axis, y0, y1, xa, xb, alpha, amp, k) {
+    var ctx = this.ctx, c = this.canvas, t = (this.prevT || 0) / 1000;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = alpha;
+    for (var y = y0; y < y1; y++) {
+      var sy = axis - 1 - Math.floor((y - axis) * (k || 1));
+      if (sy < 0) continue;
+      var depth = (y - axis + 1);
+      var off = amp ? Math.round(Math.sin(t * 1.7 + y * 0.9) * amp * (0.4 + depth * 0.12) * 4) : 0;
+      var mr = this.lakeMask().rows[y], ra = xa, rb = xb;
+      if (mr) { ra = Math.max(xa, mr[0]); rb = Math.min(xb, mr[1] + 1); }
+      if (rb <= ra) continue;
+      ctx.save(); ctx.beginPath(); ctx.rect(ra * 4, y * 4, (rb - ra) * 4, 4); ctx.clip();
+      ctx.drawImage(c, xa * 4, sy * 4, (xb - xa) * 4, 4, xa * 4 + off, y * 4, (xb - xa) * 4, 4);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  drawLake() {
+    var ctx = this.ctx, frozen = this.season === 'winter', n = this.nightAmt || 0, t = (this.prevT || 0) / 1000;
+    this.reflect(132, 132, 160, this.LX0, this.LX1, frozen ? 0.22 : 0.6, frozen ? 0 : 1, 3.2);
+    ctx.fillStyle = frozen ? 'rgba(220, 232, 242, 0.25)' : 'rgba(30, 80, 140, ' + (0.22 + 0.1 * n).toFixed(2) + ')';
+    var MR = this.lakeMask().rows;
+    for (var ly = 132; ly < 160; ly++) { var rr = MR[ly]; ctx.fillRect(rr[0], ly, rr[1] - rr[0] + 1, 1); }
+    if (!frozen) {
+      ctx.fillStyle = n > 0.5 ? 'rgba(255, 240, 200, 0.6)' : 'rgba(255, 255, 255, 0.7)';
+      for (var i = 0; i < 14; i++) {
+        var gy = 134 + (i * 7) % 25, gr = MR[gy], gx = gr[0] + 3 + (i * 47 + Math.floor(t * (6 + (i % 3) * 2))) % Math.max(1, gr[1] - gr[0] - 6);
+        if (Math.sin(t * 3 + i) > 0.3) ctx.fillRect(gx, gy, 2, 1);
+      }
+    }
+  }
+
+  drawBanks() {
+    var ctx = this.ctx, n = this.nightAmt || 0, self = this;
+    var one = function (season, alpha) {
+      if (alpha <= 0) return;
+      ctx.globalAlpha = alpha; ctx.drawImage(self.days[season].banks, 0, 0);
+      if (n > 0.001) { ctx.globalAlpha = alpha * n; ctx.drawImage(self.nights[season].banks, 0, 0); }
+    };
+    if (this.prevSeason && this.seasonFade < 1) { one(this.prevSeason, 1); one(this.season, this.seasonFade); } else one(this.season, 1);
+    ctx.globalAlpha = 1;
+  }
+
+  drawBridgeReflection() {
+    var frozen = this.season === 'winter';
+    this.reflect(151, 151, 160, this.LX0 + 6, this.LX1 - 6, frozen ? 0.18 : 0.45, frozen ? 0 : 0.7);
+  }
+
+  // ---------- park people
+  isNight() { return !!(this.state && this.state.night); }
+  dayPhase() {
+    var s = this.state || {};
+    if (s.night) return -1;
+    if (s.auto === false) return 0.5;
+    return Math.min(1, this.autoClock / 28000);
+  }
+  crowd() {
+    var dp = this.dayPhase();
+    if (dp < 0) return 1;
+    return Math.round(2 + 6 * Math.sin(Math.PI * Math.min(1, dp * 1.05)));
+  }
+  openHours() { var dp = this.dayPhase(); return dp >= 0.1 && dp <= 0.97; }
+
+  lookFor(kid) {
+    var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+    var skins = ['#f1c9a5', '#d9a07a', '#a86b4a', '#7a4a30', '#e8b48e'];
+    var hairs = ['#2a1f1a', '#5a3a22', '#c9a050', '#1c1c1c', '#8a8a8a'];
+    var T = {
+      spring: { tops: ['#e05a33', '#2e9e6b', '#f5c400', '#ffffff', '#1f5fa6', '#f4b6c8'], legs: ['#2f4f7f', '#3a3f45', '#c9b48a'], hats: null },
+      summer: { tops: ['#f5c400', '#e05a33', '#4fb3d9', '#ffffff', '#2e9e6b', '#f08aa8'], legs: ['skin', '#2f4f7f', 'skin', '#c9b48a'], hats: null },
+      fall: { tops: ['#c8512b', '#7a5a3a', '#3a3f45', '#1f5fa6', '#e3842f'], legs: ['#2f353c', '#3a4f6f', '#5a4a3a'], hats: null },
+      winter: { tops: ['#b8432a', '#1c1c1c', '#2f4f7f', '#5a6470', '#2e6b48'], legs: ['#2f353c', '#1c1c1c'], hats: ['#e05a33', '#f5c400', '#ffffff', '#1f5fa6'] }
+    }[this.season || 'winter'];
+    var skin = pick(skins), legs = pick(T.legs);
+    var L = { skin: skin, hair: T.hats ? pick(T.hats) : pick(hairs), top: pick(T.tops), legs: legs === 'skin' ? skin : legs, kid: !!kid };
+    var e = this.ev().id, r = Math.random();
+    if (e === 'stpatricks' && r < 0.7) { L.top = pick(['#2e9e4b', '#3fbf5f', '#1f7a3a']); if (r < 0.3) L.hair = '#2e9e4b'; }
+    if (e === 'easter' && r < 0.5) L.hair = pick(['#f4b6c8', '#b58ae0', '#f5e26a', '#9fd6c0']);
+    if (e === 'pride' && r < 0.7) L.top = pick(['#e0302a', '#f5a030', '#f5e26a', '#2e9e4b', '#1f5fa6', '#8a4fc0']);
+    if (e === 'halloween') { if (r < 0.25) { L.hair = L.skin = L.top = L.legs = '#f2f2f2'; } else if (r < 0.45) L.top = '#e3842f'; else if (r < 0.6) { L.hair = '#2a1f3a'; L.top = '#3a2a4a'; } }
+    if (e === 'christmas' && r < 0.4) L.hair = '#e0302a';
+    if (e === 'newyear' && r < 0.4) L.hair = '#f5c400';
+    if (e === 'valentines' && r < 0.5) L.top = pick(['#e0302a', '#f08aa8', '#c42a5a']);
+    return L;
+  }
+
+  actor(kind, home, y) { return { kind: kind, home: home, x: -10, y: y, state: 'gone', dir: 1, ph: 0, look: null, t: 0, coins: 0, react: 0, cool: 0 }; }
+
+  initPeople() {
+    this.walkers = [];
+    this.fx = [];
+    this.actors = {
+      fa: this.actor('frisbee', 52, 166), fb: this.actor('frisbee', 100, 166),
+      ca: this.actor('catch', 258, 166), cb: this.actor('catch', 286, 166),
+      s1: this.actor('sit', 206, 163), s2: this.actor('sit', 210, 163),
+      busk: this.actor('busker', 188, 164),
+      statue: this.actor('statue', 160, 162),
+      mascot: this.actor('mascot', 22, 163),
+      crew: this.actor('crew', 124, 165),
+      chess: this.actor('chess', 244, 163)
+    };
+    this.board = [];
+    for (var b = 0; b < 8; b++) this.board.push(Math.random() < 0.5);
+    var A = this.actors;
+    for (var k in A) if (this.wants(A[k])) this.placeNow(A[k]);
+    for (var i = 0; i < 5; i++) this.spawnWalker(true);
+    this.tour = { state: 'gone', cool: 240, x: -30, dir: 1, t: 0 };
+    this.discT = 0; this.ballT = 0; this.ball = { from: 0, t: 0, hold: 60, miss: false };
+  }
+
+  placeNow(a) {
+    a.look = this.lookFor(a === this.actors.cb && Math.random() < 0.5);
+    if (a.kind === 'crew') a.looks = [this.lookFor(false), this.lookFor(false), this.lookFor(false)];
+    a.x = a.home; a.state = a.kind === 'busker' ? 'play' : 'active'; a.dur = 3000; a.t = 0;
+  }
+
+  spawnWalker(anywhere) {
+    var e = this.ev().id;
+    var dp = this.dayPhase();
+    var couple = Math.random() < (e === 'valentines' ? 0.6 : (dp < 0 || dp > 0.8 ? 0.35 : 0.12));
+    var dir = Math.random() < 0.5 ? 1 : -1, jog = !couple && dp >= 0 && Math.random() < (e === 'marathon' ? 0.65 : (dp < 0.25 ? 0.55 : 0.15));
+    var dogs = ['#8a5a30', '#1c1c1c', '#e9e3cc', '#c9a050'];
+    var look = this.lookFor(false);
+    if (jog && e === 'marathon') { look.bib = true; look.top = ['#e05a33', '#4fb3d9', '#f5c400', '#2e9e6b'][Math.floor(Math.random() * 4)]; look.legs = '#1c1c1c'; }
+    this.walkers.push({
+      x: anywhere ? Math.random() * this.W : (dir > 0 ? -8 : this.W + 8), y: 165 + Math.floor(Math.random() * 3), dir: dir,
+      v: jog ? 0.45 : 0.16 + Math.random() * 0.08, jog: jog, ph: Math.random() * 4, look: look, partner: couple ? this.lookFor(false) : null,
+      dog: !jog && !couple && Math.random() < 0.3 ? dogs[Math.floor(Math.random() * dogs.length)] : null, state: 'walk', t: 0, seen: {}
+    });
+  }
+
+  wants(a) {
+    var day = this.openHours(), s = this.season || 'winter';
+    if (a.kind === 'frisbee') return day && s !== 'winter';
+    if (a.kind === 'catch' || a.kind === 'busker' || a.kind === 'mascot' || a.kind === 'chess') return day;
+    if (a.kind === 'crew') return day && s !== 'winter';
+    if (a.kind === 'statue') return day && s !== 'winter';
+    if (a.kind === 'sit') return a === this.actors.s1 ? true : day;
+    return false;
+  }
+
+  hints() {
+    var raw = this.props.hints ?? '[HINT 1]\n[HINT 2]\n[HINT 3]';
+    return String(raw).split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  stepTour() {
+    var T = this.tour, W = this.W;
+    if (T.state === 'gone') {
+      if (!this.openHours() || this.dayPhase() > 0.55) return;
+      if (--T.cool > 0) return;
+      T.state = 'walk'; T.x = -24; T.dir = 1; T.stopX = 60 + Math.random() * 190; T.stopped = false; T.t = 0;
+      T.guide = this.lookFor(false); T.guide.top = '#f5c400';
+      T.members = [this.lookFor(false), this.lookFor(false), this.lookFor(true), this.lookFor(false)];
+      return;
+    }
+    if (T.state === 'walk') {
+      var hurry = !this.openHours();
+      T.x += hurry ? 0.5 : 0.2; T.ph = (T.ph || 0) + (hurry ? 0.25 : 0.12);
+      if (!T.stopped && !this.isNight() && Math.abs(T.x - T.stopX) < 0.2) { T.state = 'stop'; T.t = 0; T.stopped = true; }
+      if (T.x > W + 30) { T.state = 'gone'; T.cool = 1200; }
+    } else if (T.state === 'stop') {
+      T.t++;
+      if (T.t === 40) {
+        var H = this.hints();
+        if (H.length) { this.hintIdx = ((this.hintIdx ?? -1) + 1) % H.length; this.tourBub = { lines: this.wrap(H[this.hintIdx], 20), until: T.t + 300 }; }
+      }
+      if (this.tourBub && T.t > this.tourBub.until) this.tourBub = null;
+      if (T.t > 380 || !this.openHours()) { T.state = 'walk'; this.tourBub = null; }
+    }
+  }
+
+  stepSkaters() {
+    var winter = this.season === 'winter';
+    if (!this.skaters) this.skaters = [];
+    var S = this.skaters, i, k;
+    var target = winter ? (this.isNight() ? 2 : Math.max(1, Math.min(6, this.crowd() - 1))) : 0;
+    var active = S.length + (this.walkers || []).filter(function (w) { return w.role && w.role.skate; }).length;
+    if (active < target && Math.random() < 0.004) this.spawnRoleWalker({ skate: true });
+    var skating = S.filter(function (q) { return q.state === 'skate'; }).length;
+    for (i = S.length - 1; i >= 0; i--) {
+      k = S[i];
+      if (k.cool > 0) k.cool--;
+      if (k.state === 'glideIn' || k.state === 'glideOut') {
+        var tx, ty;
+        if (k.state === 'glideIn') { tx = k.cx + Math.cos(k.a) * k.rx; ty = k.cy + Math.sin(k.a) * k.ry; } else { tx = this.DX - 1; ty = 156; }
+        var dx = tx - k.gx, dy = ty - k.gy, d = Math.hypot(dx, dy), sp = winter ? 0.35 : 0.6;
+        k.ph = (k.ph || 0) + 0.15;
+        if (d < 0.5) {
+          if (k.state === 'glideIn') k.state = 'skate';
+          else { S.splice(i, 1); this.spawnFromDock(k.look); continue; }
+        } else { k.gx += dx / d * sp; k.gy += dy / d * sp; }
+        continue;
+      }
+      k.timer--;
+      if (k.timer <= 0 || !winter || skating > target) { k.state = 'glideOut'; k.gx = k.cx + Math.cos(k.a) * k.rx; k.gy = this.skY(k); skating--; continue; }
+      if (k.fall > 0) { k.fall--; if (k.fall === 0 && k.bonk) { k.dizzy = 150; k.bonk = false; } continue; }
+      if (k.spin > 0) { k.spin--; continue; }
+      if (k.dizzy > 0) { k.dizzy--; k.a += k.v * 0.4; continue; }
+      k.a += k.v;
+      var r = Math.random();
+      if (r < 0.0005) k.fall = 100; else if (r < 0.0015) k.spin = 80;
+    }
+    for (i = 0; i < S.length; i++) for (var j = i + 1; j < S.length; j++) {
+      var A = S[i], B = S[j];
+      if (A.state !== 'skate' || B.state !== 'skate' || A.fall || B.fall || A.cool || B.cool) continue;
+      var ddx = (A.cx + Math.cos(A.a) * A.rx) - (B.cx + Math.cos(B.a) * B.rx), ddy = this.skY(A) - this.skY(B);
+      if (Math.abs(ddx) < 2.5 && Math.abs(ddy) < 2) {
+        A.cool = B.cool = 300;
+        if (Math.random() < 0.6) { A.fall = B.fall = 80; A.bonk = B.bonk = true; this.fx.push({ type: 'spark', x: (A.cx + Math.cos(A.a) * A.rx) + 1, y: this.skY(A) - 7, life: 30 }); }
+      }
+    }
+  }
+
+  addSkater(look) {
+    this.skaters = this.skaters || [];
+    this.skaters.push({ state: 'glideIn', gx: this.DX - 1, gy: 156, cx: 110 + Math.random() * 100, cy: 140 + Math.random() * 12, rx: 12 + Math.random() * 22, ry: 3 + Math.random() * 4, a: Math.random() * 6, v: (Math.random() < 0.5 ? 1 : -1) * (0.008 + Math.random() * 0.01), look: look, fall: 0, spin: 0, dizzy: 0, cool: 0, timer: 1800 + Math.random() * 2400 });
+  }
+
+  stepPeople() {
+    if (!this.actors) this.initPeople();
+    var W = this.W, A = this.actors, k, a, i;
+    var target = this.crowd();
+    if (this.walkers.filter(function (q) { return !q.role; }).length < target && Math.random() < 0.006) this.spawnWalker(false);
+    for (k in A) {
+      a = A[k];
+      var want = this.wants(a);
+      if (a.state === 'gone') {
+        if (a.cool > 0) a.cool--;
+        else if (want) {
+          a.look = this.lookFor(a === A.cb && Math.random() < 0.5);
+          if (a.kind === 'crew') a.looks = [this.lookFor(false), this.lookFor(false), this.lookFor(false)];
+          var fromLeft = a.home < W / 2; a.x = fromLeft ? -8 : W + 8; a.dir = fromLeft ? 1 : -1; a.state = 'arrive';
+        }
+      } else if (a.state === 'arrive') {
+        if (!want) a.state = 'leave';
+        else {
+          var d = a.home - a.x; a.dir = d > 0 ? 1 : -1;
+          if (Math.abs(d) < 0.4) { a.x = a.home; a.state = a.kind === 'busker' ? 'setup' : 'active'; a.t = 0; }
+          else { a.x += a.dir * 0.35; a.ph += 0.15; }
+        }
+      } else if (a.state === 'setup') {
+        a.t++; if (a.t >= 70) { a.state = 'play'; a.t = 0; a.dur = 3000 + Math.random() * 3000; }
+      } else if (a.state === 'play') {
+        a.t++; a.ph += 0.05;
+        if (a.t % 45 === 0) this.fx.push({ type: 'note', x: a.x + 3, y: a.y + 1, life: 80, ph: Math.random() * 6 });
+        if (!want || a.t > a.dur) { a.state = 'pack'; a.t = 0; }
+      } else if (a.state === 'pack') {
+        a.t++; if (a.t >= 70) { a.state = 'leave'; a.coins = 0; }
+      } else if (a.state === 'active') {
+        a.ph += 0.05; a.t++; if (a.react > 0) a.react--;
+        if (a.kind === 'mascot') { a.x = a.home + Math.sin(a.t * 0.004) * 12; a.dir = Math.cos(a.t * 0.004) >= 0 ? 1 : -1; }
+        if (a.kind === 'chess' && a.t % 50 === 0 && this.challenger) { var bi = Math.floor(Math.random() * 8); this.board[bi] = !this.board[bi]; }
+        if (!want) { a.state = 'leave'; if (a.kind === 'chess' && this.challenger) { this.challenger.state = 'walk'; this.challenger = null; } }
+      } else if (a.state === 'leave') {
+        a.dir = a.x < W / 2 ? -1 : 1; a.x += a.dir * 0.35; a.ph += 0.15;
+        if (a.x < -10 || a.x > W + 10) { a.state = 'gone'; a.cool = a.kind === 'busker' ? 600 : 120; }
+      }
+    }
+    this.discT += 0.012; this.ballT += 0.012;
+    var Bl = this.ball;
+    if (A.ca.state === 'active' && A.cb.state === 'active') {
+      if (Bl.hold > 0) Bl.hold--;
+      else {
+        var football = this.season === 'fall' || this.season === 'winter';
+        Bl.t += 1 / (football ? 75 : 55);
+        if (Bl.t >= 1) { Bl.t = 0; Bl.hold = Bl.miss ? 110 : 45; Bl.lastMiss = Bl.miss; Bl.from = 1 - Bl.from; Bl.miss = Math.random() < 0.12; }
+      }
+    } else { Bl.t = 0; Bl.hold = 60; Bl.miss = false; Bl.lastMiss = false; }
+    this.stepTour();
+    this.stepBridge();
+    this.stepSkaters();
+    var perf = [];
+    if (A.busk.state === 'play') perf.push(A.busk);
+    if (A.statue.state === 'active') perf.push(A.statue);
+    if (A.mascot.state === 'active') perf.push(A.mascot);
+    if (A.crew.state === 'active') perf.push(A.crew);
+    var vday = this.ev().id === 'valentines';
+    for (i = this.walkers.length - 1; i >= 0; i--) {
+      var w = this.walkers[i];
+      if (w.state === 'toDock') {
+        w.y -= 0.12; w.ph += 0.1;
+        if (w.y <= 156) {
+          if (w.role.boat) this.launchBoat(w.role.boat, w.look);
+          else if (w.role.skate) this.addSkater(w.look);
+          this.walkers.splice(i, 1);
+        }
+        continue;
+      }
+      if (w.state === 'fromDock') {
+        w.y += 0.12; w.ph += 0.1;
+        if (w.y >= w.ty) { w.y = w.ty; w.state = 'walk'; }
+        continue;
+      }
+      if (w.state === 'walk') {
+        w.x += w.v * w.dir; w.ph += w.v * 0.6;
+        if (w.role && Math.abs(w.x - (this.DX - 1)) < 0.3) {
+          var valid = w.role.skate ? this.season === 'winter' : (this.season !== 'winter' && this.openHours());
+          if (valid) { w.state = 'toDock'; w.x = this.DX - 1; continue; }
+          if (w.role.boat) w.role.boat.pending = false;
+          w.role = null;
+        }
+        if (w.partner && vday && !this.proposing && w.x > 40 && w.x < 280 && Math.random() < 0.002) { w.state = 'propose'; w.t = 0; this.proposing = w; continue; }
+        if (!w.jog && !w.partner && A.chess.state === 'active' && !this.challenger && !w.seen.chess && Math.abs(w.x - (A.chess.x + 9)) < 1) {
+          w.seen.chess = 1;
+          if (Math.random() < 0.4) { w.state = 'chess'; w.t = 500 + Math.random() * 500; this.challenger = w; continue; }
+        }
+        if (!w.jog) for (var p = 0; p < perf.length; p++) {
+          var pf = perf[p], cx = pf.kind === 'crew' ? pf.x + 5 : pf.x;
+          if (!w.seen[pf.kind] && Math.abs(w.x - cx) < 10 && (w.dir > 0 ? w.x < cx : w.x > cx)) {
+            w.seen[pf.kind] = 1;
+            if (Math.random() < (pf.kind === 'crew' ? 0.55 : 0.35)) { w.state = 'watch'; w.t = 90 + Math.random() * 150; w.target = pf; w.face = cx > w.x ? 1 : -1; }
+            break;
+          }
+        }
+        if (w.x > W + 10 || w.x < -10) { this.walkers.splice(i, 1); if (this.walkers.length <= target) this.spawnWalker(false); }
+      } else if (w.state === 'watch') {
+        w.t--;
+        var tg = w.target;
+        if (tg.state !== 'play' && tg.state !== 'active') { w.state = 'walk'; continue; }
+        if (w.t <= 0) {
+          var tp = tg.kind === 'busker' ? 0.5 : tg.kind === 'statue' ? 0.55 : tg.kind === 'crew' ? 0.45 : 0.3;
+          if (Math.random() < tp) {
+            var tx = tg.kind === 'busker' ? tg.x - 4 : tg.kind === 'crew' ? tg.x - 5 : tg.x + 1, ty = tg.kind === 'busker' ? tg.y + 4 : tg.kind === 'crew' ? tg.y + 3 : tg.y + 3;
+            this.fx.push({ type: 'coin', sx: w.x + 1, sy: w.y + 2, tx: tx, ty: ty, t: 0, to: tg });
+          }
+          w.state = 'walk';
+        }
+      } else if (w.state === 'chess') {
+        w.t--;
+        if (w.t <= 0 || A.chess.state !== 'active') {
+          if (A.chess.state === 'active' && Math.random() < 0.6) this.fx.push({ type: 'coin', sx: A.chess.x + 9, sy: 166, tx: A.chess.x + 1, ty: 166, t: 0, to: A.chess });
+          w.state = 'walk'; w.dir = 1; w.x = A.chess.x + 10; this.challenger = null;
+        }
+      } else if (w.state === 'propose') {
+        w.t++;
+        if (w.t === 150) this.fx.push({ type: 'spark', x: w.x + 3, y: w.y + 2, life: 140 });
+        if (w.t > 190 && w.t < 280 && w.t % 14 === 0) this.fx.push({ type: 'heart', x: w.x + 2 + Math.random() * 4, y: w.y - 2, life: 90 });
+        if (w.t >= 420) { w.state = 'walk'; this.proposing = null; }
+      }
+    }
+    for (i = this.fx.length - 1; i >= 0; i--) {
+      var f = this.fx[i];
+      if (f.type === 'note') { f.y -= 0.15; f.ph += 0.08; f.life--; if (f.life <= 0) this.fx.splice(i, 1); }
+      else if (f.type === 'heart') { f.y -= 0.22; f.life--; if (f.life <= 0) this.fx.splice(i, 1); }
+      else if (f.type === 'spark') { f.life--; if (f.life <= 0) this.fx.splice(i, 1); }
+      else { f.t += 1 / 32; if (f.t >= 1) { if (f.to.kind === 'busker') f.to.coins = Math.min(4, f.to.coins + 1); else f.to.react = 80; this.fx.splice(i, 1); } }
+    }
+  }
+
+  drawPersonFull(ctx, x, y, look, frame, sitting) {
+    this.drawPerson(ctx, x, y, look, frame, sitting);
+    if (look.bib) { ctx.fillStyle = this.dim('#ffffff'); ctx.fillRect(x + 1, y + 2, 1, 1); }
+  }
+
+  drawKneel(ctx, x, y, look, dot) {
+    dot(look.hair, x + 1, y + 1); dot(look.skin, x + 1, y + 2);
+    dot(look.top, x, y + 3); dot(look.top, x + 1, y + 3); dot(look.top, x + 2, y + 3); dot(look.top, x + 1, y + 4);
+    dot(look.legs, x + 1, y + 5); dot(look.legs, x, y + 5);
+  }
+
+  drawBusker(ctx, a, dot) {
+    var x = Math.round(a.x), y = a.y, L = a.look;
+    if (a.state === 'arrive' || a.state === 'leave') {
+      this.drawPerson(ctx, x, y, L, Math.floor(a.ph) % 2, false);
+      var cxw = a.dir > 0 ? x - 1 : x + 3;
+      dot('#6b4a2a', cxw, y + 3); dot('#6b4a2a', cxw, y + 4);
+      return;
+    }
+    var open = a.state === 'play' || (a.state === 'setup' && a.t > 20) || (a.state === 'pack' && a.t < 40);
+    var cx = x - 6, i;
+    for (i = 0; i < 4; i++) dot('#6b4a2a', cx + i, y + 5);
+    if (open) {
+      dot('#6b4a2a', cx - 1, y + 4); dot('#6b4a2a', cx - 1, y + 3);
+      for (i = 0; i < 4; i++) dot(i < a.coins ? '#f5c400' : '#a3343a', cx + i, y + 4);
+    } else for (i = 0; i < 4; i++) dot('#5a3a20', cx + i, y + 4);
+    this.drawPerson(ctx, x, y, L, 0, false);
+    var raised = a.state === 'play' || (a.state === 'setup' && a.t > 40) || (a.state === 'pack' && a.t < 30);
+    if (raised) {
+      var tilt = a.state === 'play' && Math.floor(a.ph * 2) % 2;
+      dot('#d9a640', x + 2, y + 1); dot('#d9a640', x + 3, y + 2); dot('#d9a640', x + 3, y + 3);
+      dot('#f2c860', x + 3 + (tilt ? 1 : 0), y + 4 - (tilt ? 1 : 0)); dot('#d9a640', x + 2, y + 4);
+    }
+  }
+
+  drawStatue(ctx, a, dot) {
+    var x = Math.round(a.x), y = a.y;
+    var G = '#6fb59a', D = '#4f9a80', Lt = '#9fd6c0';
+    if (a.state !== 'active') { this.drawPerson(ctx, x, y + 3, { hair: Lt, skin: G, top: G, legs: D, kid: false }, Math.floor(a.ph) % 2, false); return; }
+    for (var i = -1; i <= 3; i++) { dot('#b8c0c8', i + x, y + 4); dot('#8a949e', i + x, y + 5); }
+    dot(Lt, x, y - 3); dot(Lt, x + 2, y - 3); dot(Lt, x + 1, y - 4);
+    dot(G, x + 1, y - 2); dot(G, x, y - 1); dot(G, x + 1, y - 1); dot(G, x + 2, y - 1);
+    for (var r = 0; r <= 3; r++) { dot(D, x, y + r); dot(G, x + 1, y + r); dot(G, x + 2, y + r); }
+    dot(D, x - 1, y);
+    var wave = a.react > 0 && Math.floor(a.react / 10) % 2;
+    var flame = Math.floor(a.ph * 3) % 2 ? '#f5c400' : '#f5a030';
+    if (wave) { dot(G, x + 3, y); dot(G, x + 4, y - 1); dot(flame, x + 4, y - 2); }
+    else { dot(G, x + 3, y - 2); dot(G, x + 3, y - 3); dot(flame, x + 3, y - 4); }
+  }
+
+  drawMascot(ctx, a, dot) {
+    var x = Math.round(a.x), y = a.y - 3 - (a.react > 0 && Math.floor(a.react / 8) % 2 ? 1 : 0);
+    var flap = a.state === 'active' ? Math.floor(a.ph * (a.react > 0 ? 6 : 2)) % 2 : 0;
+    var walk = a.state !== 'active' ? Math.floor(a.ph) % 2 : 0;
+    var rows = ['.ggg.', '.gegb', '.nmn.', flap ? '.ggg.' : 'wgggw', flap ? 'wgggw' : '.ggg.', '.ggg.', walk ? '..p..' : '.p.p.'];
+    var C = { g: '#a3a8b8', e: '#1c1c1c', b: '#f0a848', n: '#4fb390', m: '#9a6bc0', w: '#8a8f9e', p: '#e08a7a' };
+    for (var r = 0; r < rows.length; r++) for (var c = 0; c < 5; c++) {
+      var ch = rows[r][c]; if (ch === '.') continue;
+      dot(C[ch], a.dir >= 0 ? x + c : x + 4 - c, y + r);
+    }
+  }
+
+  drawCrew(ctx, a, dot) {
+    var x = Math.round(a.x), y = a.y, L = a.looks || [a.look, a.look, a.look];
+    if (a.state !== 'active') {
+      for (var i = 0; i < 3; i++) this.drawPerson(ctx, x - a.dir * i * 5, y, L[i], Math.floor(a.ph + i) % 2, false);
+      dot('#3a3f45', x - a.dir * 2 + 1, y + 3); return;
+    }
+    dot('#3a3f45', x - 7, y + 3); dot('#3a3f45', x - 6, y + 3); dot('#3a3f45', x - 5, y + 3);
+    dot('#3a3f45', x - 7, y + 4); dot('#9aa5b1', x - 6, y + 4); dot('#3a3f45', x - 5, y + 4);
+    var b = Math.floor(a.ph * 3) % 2;
+    this.drawPerson(ctx, x, y, L[0], b, false);
+    dot(L[0].top, b ? x - 1 : x + 3, y + 1);
+    var k = Math.floor(a.ph * 4) % 4, X = x + 5, M = L[1];
+    if (k === 0) this.drawPerson(ctx, X, y, M, 0, false);
+    else if (k === 2) { dot(M.legs, X + 1, y); dot(M.legs, X, y - 1); dot(M.legs, X + 2, y - 1); dot(M.legs, X + 1, y + 1); dot(M.top, X + 1, y + 2); dot(M.top, X, y + 3); dot(M.top, X + 1, y + 3); dot(M.top, X + 2, y + 3); dot(M.skin, X + 1, y + 4); dot(M.hair, X + 1, y + 5); }
+    else { var f = k === 1 ? 1 : -1, c0 = X + 1; dot(M.hair, c0 - 2 * f, y + 5); dot(M.skin, c0 - f, y + 5); dot(M.top, c0, y + 5); dot(M.top, c0, y + 4); dot(M.legs, c0 + f, y + 4); dot(M.legs, c0 + 2 * f, y + 3); }
+    var X2 = x + 10, N = L[2];
+    if (a.react > 0) { dot(N.hair, X2 + 1, y + 3); dot(N.skin, X2 + 1, y + 4); dot(N.top, X2, y + 4); dot(N.top, X2 + 2, y + 2); dot(N.legs, X2 + 2, y + 1); dot(N.legs, X2 + 3, y); dot(N.top, X2 + 1, y + 5); }
+    else { this.drawPerson(ctx, X2, y, N, 0, false); if (Math.floor(a.ph * 2) % 2) { dot(N.skin, X2 - 1, y + 2); dot(N.skin, X2 + 3, y + 2); } }
+  }
+
+  drawChess(ctx, a, dot) {
+    var x = Math.round(a.x), y = a.y;
+    if (a.state !== 'active') { this.drawPerson(ctx, x, y + 2, a.look, Math.floor(a.ph) % 2, false); return; }
+    for (var i = 2; i < 8; i++) dot('#7a5a3a', x + i, y + 5);
+    dot('#5a4028', x + 3, y + 6); dot('#5a4028', x + 6, y + 6); dot('#5a4028', x + 3, y + 7); dot('#5a4028', x + 6, y + 7);
+    for (i = 0; i < 4; i++) dot((i % 2) ? '#1c1c1c' : '#f6f2e8', x + 3 + i, y + 4);
+    if (this.challenger) for (i = 0; i < 4; i++) if (this.board[i]) dot(i % 2 ? '#f6f2e8' : '#1c1c1c', x + 3 + i, y + 3);
+    this.drawPerson(ctx, x, y, a.look, 0, true);
+    if (this.challenger) this.drawPerson(ctx, x + 8, y, this.challenger.look, 0, true);
+  }
+
+  drawPeopleBehind() {
+    var S = this.skaters, ctx = this.ctx;
+    if (!S) return;
+    for (var i = 0; i < S.length; i++) if (this.skY(S[i]) < 148) this.drawSkater(S[i]);
+  }
+  skY(k) { return k.state === 'skate' ? Math.round(k.cy + Math.sin(k.a) * k.ry) : Math.round(k.gy); }
+  skX(k) { return k.state === 'skate' ? Math.round(k.cx + Math.cos(k.a) * k.rx) : Math.round(k.gx); }
+  drawSkater(k) {
+    var ctx = this.ctx, self = this, x = this.skX(k), y = this.skY(k) - 5;
+    var dot = function (c, px, py) { ctx.fillStyle = self.dim(c); ctx.fillRect(px, py, 1, 1); };
+    if (k.fall > 0) { dot(k.look.hair, x - 1, y + 5); dot(k.look.skin, x, y + 5); dot(k.look.top, x + 1, y + 5); dot(k.look.top, x + 2, y + 5); dot(k.look.legs, x + 3, y + 5); dot(k.look.legs, x + 4, y + 4); ctx.globalAlpha = 1; return; }
+    var wob = k.dizzy > 0 ? (Math.floor(k.dizzy / 6) % 2 ? 1 : -1) : 0;
+    var fr = k.spin > 0 ? Math.floor(k.spin / 4) % 2 : (k.state === 'skate' ? Math.floor(k.a * 40) % 2 : Math.floor(k.ph || 0) % 2);
+    this.drawPerson(ctx, x + (wob > 0 ? 1 : 0), y, k.look, k.spin > 0 || k.dizzy > 0 ? 0 : fr, false);
+    if (k.spin > 0) dot(k.look.top, fr ? x - 1 : x + 3, y + 2);
+    if (k.dizzy > 0) {
+      var ang = k.dizzy * 0.25;
+      dot('#f5e26a', x + 1 + Math.round(Math.cos(ang) * 2), y - 2 + Math.round(Math.sin(ang) * 0.7));
+      dot('#f5e26a', x + 1 + Math.round(Math.cos(ang + Math.PI) * 2), y - 2 + Math.round(Math.sin(ang + Math.PI) * 0.7));
+    }
+    dot('#c9d3e6', x, y + 6); dot('#c9d3e6', x + 2, y + 6);
+    ctx.globalAlpha = 0.18; dot(k.look.top, x + 1, y + 7); dot(k.look.skin, x + 1, y + 8);
+    ctx.globalAlpha = 1;
+  }
+
+  drawPeople() {
+    var ctx = this.ctx, self = this, A = this.actors;
+    if (!A) return;
+    var dot = function (c, x, y) { ctx.fillStyle = self.dim(c); ctx.fillRect(Math.round(x), Math.round(y), 1, 1); };
+    var S = this.skaters, i;
+    if (S) for (i = 0; i < S.length; i++) if (this.skY(S[i]) >= 148) this.drawSkater(S[i]);
+    this.drawSnowman(dot);
+    for (var b = 0; b < 9; b++) { dot('#7a5a3a', 205 + b, 168); dot('#5a4028', 205 + b, 166); }
+    dot('#3a2a1a', 205, 169); dot('#3a2a1a', 205, 170); dot('#3a2a1a', 213, 169); dot('#3a2a1a', 213, 170);
+    var list = [];
+    for (var k in A) if (A[k].state !== 'gone') list.push(A[k]);
+    for (i = 0; i < this.walkers.length; i++) if (this.walkers[i].state !== 'chess') list.push(this.walkers[i]);
+    var T = this.tour;
+    if (T && T.state !== 'gone') list.push({ tour: true, y: 168 });
+    list.sort(function (p, q2) { return p.y - q2.y; });
+    for (i = 0; i < list.length; i++) {
+      var p = list[i];
+      if (p.tour) { this.drawTour(ctx, dot); continue; }
+      if (!p.kind) {
+        var x = Math.round(p.x), fr = (p.state === 'watch' || p.state === 'propose') ? 0 : Math.floor(p.ph) % 2;
+        if (p.state === 'propose') {
+          var t = p.t;
+          if (t >= 60 && t < 300) this.drawKneel(ctx, x, p.y, p.look, dot); else this.drawPersonFull(ctx, x, p.y, p.look, 0, false);
+          var jump = t > 170 && t < 280 && Math.floor(t / 8) % 2 ? 1 : 0;
+          this.drawPersonFull(ctx, x + (t >= 300 ? 3 : 4), p.y - jump, p.partner, 0, false);
+          continue;
+        }
+        this.drawPersonFull(ctx, x, p.y, p.look, fr, false);
+        if (p.partner) { this.drawPersonFull(ctx, x + 4 * (p.dir > 0 ? -1 : 1), p.y, p.partner, 1 - fr, false); }
+        if (p.dog) {
+          var dir = p.state === 'watch' ? p.face : p.dir, dx = x - dir * 6, dy = p.y + 3;
+          dot('#6b6b6b', p.x + 1 - dir * 1, p.y + 3); dot('#6b6b6b', p.x + 1 - dir * 3, p.y + 3);
+          dot(p.dog, dx + (dir > 0 ? 3 : 0), dy); dot(p.dog, dx, dy + 1); dot(p.dog, dx + 1, dy + 1); dot(p.dog, dx + 2, dy + 1); dot(p.dog, dx + 3, dy + 1);
+          if (fr) { dot(p.dog, dx, dy + 2); dot(p.dog, dx + 3, dy + 2); } else { dot(p.dog, dx + 1, dy + 2); dot(p.dog, dx + 2, dy + 2); }
+        }
+        continue;
+      }
+      if (p.kind === 'busker') { this.drawBusker(ctx, p, dot); continue; }
+      if (p.kind === 'statue') { this.drawStatue(ctx, p, dot); continue; }
+      if (p.kind === 'mascot') { this.drawMascot(ctx, p, dot); continue; }
+      if (p.kind === 'crew') { this.drawCrew(ctx, p, dot); continue; }
+      if (p.kind === 'chess') { this.drawChess(ctx, p, dot); continue; }
+      var moving = p.state === 'arrive' || p.state === 'leave';
+      if (p.kind === 'sit' && !moving) { this.drawPerson(ctx, p.home, 163, p.look, 0, true); continue; }
+      this.drawPerson(ctx, Math.round(p.x), p.y, p.look, moving ? Math.floor(p.ph) % 2 : 0, false);
+    }
+    if (A.fa.state === 'active' && A.fb.state === 'active') {
+      var u = this.discT % 2, tt = u < 1 ? u : 2 - u, span = A.fb.home - A.fa.home - 3;
+      dot('#e05a33', A.fa.home + 3 + span * tt, 168 - Math.sin(Math.PI * tt) * 10);
+      dot('#e05a33', A.fa.home + 4 + span * tt, 168 - Math.sin(Math.PI * tt) * 10);
+    }
+    if (A.ca.state === 'active' && A.cb.state === 'active') {
+      var Bl = this.ball, football = this.season === 'fall' || this.season === 'winter';
+      var P = [A.ca, A.cb], thr = P[Bl.from], rec = P[1 - Bl.from];
+      var hand = function (q) { return q.look.kid ? 168 : 167; };
+      var sx = thr.home + (Bl.from === 0 ? 3 : -1), ex = rec.home + (Bl.from === 0 ? -1 : 3);
+      var sy = hand(thr), ey = hand(rec);
+      if (Bl.miss) { ex = rec.home + (Bl.from === 0 ? 5 : -3); ey = 171; }
+      if (Bl.hold > 0) {
+        var holder = thr;
+        if (Bl.lastMiss && Bl.hold > 40) {
+          var gx = holder.home + (Bl.from === 0 ? -3 : 5);
+          dot(football ? '#7a4a24' : '#f6f2e8', gx, 171);
+          if (Bl.hold < 70) { dot(holder.look.top, holder.home + (Bl.from === 0 ? -1 : 3), 169); }
+        } else {
+          var windup = Bl.hold < 12;
+          var hx = holder.home + (Bl.from === 0 ? (windup ? -1 : 3) : (windup ? 3 : -1)), hy = windup ? hand(holder) - 3 : hand(holder);
+          dot(holder.look.skin, hx, hy);
+          dot(football ? '#7a4a24' : '#f6f2e8', hx, hy - 1);
+        }
+        dot('#6b4424', rec.home + (Bl.from === 0 ? -1 : 3), hand(rec));
+      } else {
+        var tt = Bl.t, arcH = football ? 16 : 11;
+        var bx = sx + (ex - sx) * tt, by = sy + (ey - sy) * tt - Math.sin(Math.PI * tt) * arcH;
+        if (football) {
+          var spin = Math.floor(this.ballT * 60) % 2;
+          dot('#7a4a24', bx, by); dot('#7a4a24', bx + (Bl.from === 0 ? 1 : -1), by - (spin ? 1 : 0));
+        } else { dot('#f6f2e8', bx, by); }
+        if (tt > 0.6 && !Bl.miss) { dot('#6b4424', rec.home + (Bl.from === 0 ? -1 : 3), hand(rec) - 1); dot('#6b4424', rec.home + (Bl.from === 0 ? -1 : 3), hand(rec) - 2); }
+        else dot('#6b4424', rec.home + (Bl.from === 0 ? -1 : 3), hand(rec));
+        if (tt < 0.12) dot(thr.look.skin, thr.home + (Bl.from === 0 ? 3 : -1), hand(thr) - 2);
+      }
+    }
+    for (i = 0; i < this.fx.length; i++) {
+      var f = this.fx[i];
+      if (f.type === 'note') {
+        var nx = Math.round(f.x + Math.sin(f.ph) * 2), ny = Math.round(f.y);
+        ctx.globalAlpha = Math.min(1, f.life / 30);
+        dot('#1c1c1c', nx, ny); dot('#1c1c1c', nx + 1, ny - 1); dot('#1c1c1c', nx + 1, ny - 2);
+        ctx.globalAlpha = 1;
+      } else if (f.type === 'heart') {
+        var hx = Math.round(f.x + Math.sin(f.life * 0.15)), hy = Math.round(f.y);
+        ctx.globalAlpha = Math.min(1, f.life / 30);
+        dot('#e0305a', hx, hy); dot('#e0305a', hx + 2, hy); dot('#e0305a', hx, hy + 1); dot('#e0305a', hx + 1, hy + 1); dot('#e0305a', hx + 2, hy + 1); dot('#e0305a', hx + 1, hy + 2);
+        ctx.globalAlpha = 1;
+      } else if (f.type === 'spark') {
+        if (Math.floor(f.life / 6) % 2) { ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(f.x), Math.round(f.y), 1, 1); ctx.fillStyle = '#bfe8ff'; ctx.fillRect(Math.round(f.x), Math.round(f.y) - 1, 1, 1); }
+      } else {
+        dot('#f5c400', f.sx + (f.tx - f.sx) * f.t, f.sy + (f.ty - f.sy) * f.t - Math.sin(Math.PI * f.t) * 7);
+      }
+    }
+  }
+
+  drawSnowman(dot) {
+    var ctx = this.ctx, X = 70, Y = 161;
+    var inWinter = this.season === 'winter';
+    var fadeIn = inWinter ? (this.prevSeason && this.seasonFade < 1 ? this.seasonFade : 1) : 0;
+    var m = this.meltT || 0, pud = this.puddle || 0;
+    if (!inWinter && m <= 0 && pud <= 0) return;
+    if (pud > 0 || m > 0) {
+      ctx.globalAlpha = inWinter ? 0 : Math.min(1, pud);
+      var pw = 3 + Math.round(5 * Math.min(1, m * 1.3));
+      for (var i = 0; i < pw; i++) dot(i % 3 === 1 ? '#d8eefc' : '#a9d4f2', X + 1 - Math.floor(pw / 2) + i, Y + 5);
+      ctx.globalAlpha = 1;
+    }
+    var h = inWinter ? 6 : Math.ceil(6 * (1 - m));
+    if (h <= 0 && !inWinter) {
+      ctx.globalAlpha = Math.min(1, pud); dot('#e3842f', X + 3, Y + 5); dot('#1c1c1c', X - 1, Y + 5); dot('#1c1c1c', X, Y + 5); ctx.globalAlpha = 1;
+      return;
+    }
+    ctx.globalAlpha = inWinter ? fadeIn : 1;
+    var rows = [[[1, 0]], [[0, 1], [1, 1], [2, 1]], [[1, 2]], [[0, 3], [1, 3], [2, 3]], [[-1, 4], [0, 4], [1, 4], [2, 4], [3, 4]], [[-1, 5], [0, 5], [1, 5], [2, 5], [3, 5]]];
+    var shift = 6 - h;
+    for (var r = shift; r < 6; r++) for (var k = 0; k < rows[r].length; k++) {
+      var px = rows[r][k][0], wide = r < 4 && h < 5 ? (px === 0 ? -1 : px === 2 ? 3 : px) : px;
+      dot(m > 0.3 && Math.random() < 0.02 ? '#d8eefc' : '#ffffff', X + wide, Y + rows[r][k][1]);
+    }
+    var topY = Y + shift;
+    dot('#1c1c1c', X + 1, topY - 1); dot('#1c1c1c', X, topY - 1); dot('#1c1c1c', X + 2, topY - 1);
+    if (h >= 3) dot('#e3842f', X + 2, topY + 1); else dot('#e3842f', X + 3, Y + 5);
+    ctx.globalAlpha = 1;
+  }
+
+  drawTour(ctx, dot) {
+    var T = this.tour, x = Math.round(T.x), y = 167, stop = T.state === 'stop';
+    var fr = stop ? 0 : Math.floor(T.ph || 0) % 2;
+    for (var i = 0; i < T.members.length; i++) {
+      var mx = x - 5 * (i + 1), my = y + (i % 2 ? -1 : 0);
+      this.drawPerson(ctx, mx, my, T.members[i], stop ? 0 : (fr + i) % 2, false);
+      if (stop && T.t > 50) { var by = T.members[i].kid ? my + 3 : my + 1; dot('#1c1c1c', mx + 1, by); dot('#1c1c1c', mx + 2, by); }
+    }
+    this.drawPerson(ctx, x, y, T.guide, fr, false);
+    var raise = stop ? 2 : 0;
+    dot('#5a4028', x + 3, y - 1 - raise); dot('#5a4028', x + 3, y - raise); dot('#5a4028', x + 3, y + 1 - raise); dot('#5a4028', x + 3, y + 2);
+    dot('#1f5fa6', x + 4, y - 1 - raise); dot('#1f5fa6', x + 5, y - 1 - raise); dot('#1f5fa6', x + 4, y - raise);
+  }
+
+  makeFalcon() {
+    var F = [
+      ['..s......', '...ss....', 'ksssssky.', '.....w...'],
+      ['.........', '.........', 'ksssssky.', '..sssw...']
+    ];
+    var P = { s: '#5b6878', k: '#2a2f38', w: '#e8e2d4', y: '#f2c230' };
+    var out = [];
+    for (var f = 0; f < 2; f++) for (var fl = 0; fl < 2; fl++) {
+      var c = document.createElement('canvas'); c.width = 9; c.height = 4;
+      var x = c.getContext('2d');
+      for (var r = 0; r < 4; r++) for (var col = 0; col < 9; col++) {
+        var ch = F[f][r][col]; if (ch === '.') continue;
+        x.fillStyle = P[ch]; x.fillRect(fl ? 8 - col : col, r, 1, 1);
+      }
+      out.push(c);
+    }
+    return out;
+  }
+
+  makeHawk() {
+    var pat = ['.....h.....', 'd...hhh...d', 'dddhhhhhddd', '.ddddhdddd.', '....hhh....', '....h.h....'];
+    var c = document.createElement('canvas'); c.width = 11; c.height = 6;
+    var x = c.getContext('2d');
+    for (var r = 0; r < 6; r++) for (var col = 0; col < 11; col++) {
+      var ch = pat[r][col];
+      if (ch === '.') continue;
+      x.fillStyle = ch === 'h' ? '#8a5530' : '#4a2a14';
+      x.fillRect(col, r, 1, 1);
+    }
+    return c;
+  }
+
+  darkenCanvas(src) {
+    var c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+    var x = c.getContext('2d'); x.drawImage(src, 0, 0);
+    var img = x.getImageData(0, 0, c.width, c.height), d = img.data;
+    for (var i = 0; i < d.length; i += 4) {
+      if (!d[i + 3]) continue;
+      d[i] = d[i] * 0.42; d[i + 1] = d[i + 1] * 0.5; d[i + 2] = Math.min(255, d[i + 2] * 0.72 + 8);
+    }
+    x.putImageData(img, 0, 0);
+    return { c: c, x: x, img: img };
+  }
+
+  chatter() {
+    var raw = this.props.chatter ?? "It's all about da Mets!\nAy, I'm walkin' here!";
+    return String(raw).split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  glyphs() {
+    if (this._gl) return this._gl;
+    this._gl = {
+      A: ['010','101','111','101','101'], B: ['110','101','110','101','110'], C: ['011','100','100','100','011'], D: ['110','101','101','101','110'],
+      E: ['111','100','110','100','111'], F: ['111','100','110','100','100'], G: ['011','100','101','101','011'], H: ['101','101','111','101','101'],
+      I: ['111','010','010','010','111'], J: ['001','001','001','101','010'], K: ['101','101','110','101','101'], L: ['100','100','100','100','111'],
+      M: ['101','111','111','101','101'], N: ['110','101','101','101','101'], O: ['010','101','101','101','010'], P: ['110','101','110','100','100'],
+      Q: ['010','101','101','110','011'], R: ['110','101','110','101','101'], S: ['011','100','010','001','110'], T: ['111','010','010','010','010'],
+      U: ['101','101','101','101','111'], V: ['101','101','101','101','010'], W: ['101','101','111','111','101'], X: ['101','101','010','101','101'],
+      Y: ['101','101','010','010','010'], Z: ['111','001','010','100','111'],
+      '0': ['111','101','101','101','111'], '1': ['010','110','010','010','111'], '2': ['110','001','010','100','111'], '3': ['110','001','010','001','110'],
+      '4': ['101','101','111','001','001'], '5': ['111','100','110','001','110'], '6': ['011','100','111','101','111'], '7': ['111','001','010','010','010'],
+      '8': ['111','101','111','101','111'], '9': ['111','101','111','001','110'],
+      '!': ['010','010','010','000','010'], '?': ['110','001','010','000','010'], '.': ['000','000','000','000','010'], ',': ['000','000','000','010','100'],
+      "'": ['010','010','000','000','000'], '-': ['000','000','111','000','000'], ':': ['000','010','000','010','000'], '&': ['010','101','010','101','011'], '[': ['110','100','100','100','110'], ']': ['011','001','001','001','011'], '/': ['001','001','010','100','100']
+    };
+    return this._gl;
+  }
+
+  wrap(text, max) {
+    var words = text.toUpperCase().replace(/[‘’]/g, "'").split(/\s+/), lines = [], cur = '';
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i]; if (!w) continue;
+      if (!cur) cur = w; else if ((cur + ' ' + w).length <= max) cur += ' ' + w; else { lines.push(cur); cur = w; }
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  cloud(x, cx, cy, s, rnd) {
+    var C = [[0, 0, 1], [-1.15, 0.35, 0.72], [1.15, 0.4, 0.68], [0.55, -0.55, 0.72], [-0.55, -0.4, 0.62], [-1.9, 0.6, 0.45], [1.9, 0.65, 0.42]];
+    var bottom = cy + s * 0.75;
+    var inside = function (px, py) {
+      if (py > bottom) return false;
+      for (var k = 0; k < C.length; k++) { var dx = px - (cx + C[k][0] * s), dy = py - (cy + C[k][1] * s), r = C[k][2] * s; if (dx * dx + dy * dy <= r * r) return true; }
+      return false;
+    };
+    for (var py = Math.floor(cy - s * 1.4); py <= bottom + 1; py++) for (var px = Math.floor(cx - s * 2.5); px <= cx + s * 2.5; px++) {
+      if (inside(px, py)) {
+        var shade = (py > cy + s * 0.35 && rnd() < 0.7) || (py > cy + s * 0.55);
+        x.fillStyle = shade ? '#e4ebf2' : (rnd() < 0.06 ? '#f1f5f9' : '#ffffff');
+        x.fillRect(px, py, 1, 1);
+      } else if (rnd() < 0.45 && (inside(px + 1, py) || inside(px - 1, py) || inside(px, py + 1) || inside(px, py - 1))) {
+        x.fillStyle = rnd() < 0.5 ? '#d6e8f6' : '#2a62a8';
+        x.fillRect(px, py, 1, 1);
+      }
+    }
+  }
+
+  seasonCfg(name) {
+    var C = {
+      spring: { sky: ['#3477c0', '#4085c9', '#5296d4', '#6aa9df', '#86bce8', '#a6d0f0', '#c4e1f6'], clouds: [[52, 34, 16], [268, 48, 13], [170, 22, 8]],
+        tree: ['#9ad66f', '#7cc25c', '#68ad4f'], blossom: '#f4b6c8', grass: ['#8fd06a', '#7cc15c'], bare: false, snow: false },
+      summer: { sky: ['#1f5fae', '#2a6dbb', '#387fc8', '#4f93d4', '#69a8df', '#86bce8', '#a6d0f0'], clouds: [[80, 30, 10], [240, 40, 8]],
+        tree: ['#56a24a', '#43893c', '#356f31'], blossom: null, grass: ['#6fb04f', '#619f45'], bare: false, snow: false },
+      fall: { sky: ['#3b7cbf', '#4a8ac8', '#5d9bd2', '#76addc', '#91c0e5', '#acd2ee', '#c7e2f5'], clouds: [[60, 30, 14], [250, 44, 15]],
+        tree: ['#f2c230', '#e3842f', '#c8512b'], blossom: null, grass: ['#a9b55c', '#96a24d'], bare: false, snow: false },
+      winter: { sky: ['#7392b0', '#8099b8', '#90a7c2', '#a1b5cd', '#b3c4d7', '#c4d2e0', '#d5dfea'], clouds: [[70, 30, 18], [230, 26, 17], [150, 46, 10]],
+        tree: null, blossom: null, grass: ['#f4f7fa', '#e3e9ef'], bare: true, snow: true }
+    };
+    return C[name] || C.spring;
+  }
+
+  makeSprites(season) {
+    var glossy = season === 'summer' || season === 'spring';
+    var P = { k: '#1b1f2b', p: glossy ? '#6a55a8' : '#4a3f6e', g: glossy ? '#2f8a6e' : '#2c5a50' };
+    var spotA = season !== 'summer', spotB = season === 'fall' || season === 'winter';
+    var bill = (season === 'spring' || season === 'summer') ? '#f2c230' : '#3b3b44';
+    var F = [
+      ['..p....', '..sp...', 'kskwgky', '.......'],
+      ['.......', '.ps....', 'kkswgky', '.......'],
+      ['.......', '.......', 'kskwgky', '..sp...']
+    ];
+    var out = [];
+    for (var k = -2; k <= 2; k++) for (var f = 0; f < 3; f++) for (var fl = 0; fl < 2; fl++) {
+      var c = document.createElement('canvas'); c.width = 7; c.height = 10;
+      var x = c.getContext('2d'), s = k * 0.45;
+      for (var row = 0; row < 4; row++) for (var col = 0; col < 7; col++) {
+        var ch = F[f][row][col];
+        if (ch === '.') continue;
+        var color = ch === 'y' ? bill : ch === 'w' ? (spotA ? '#f1ead2' : P.k) : ch === 's' ? (spotB ? '#e9e3cc' : P.k) : P[ch];
+        x.fillStyle = color;
+        x.fillRect(fl ? 6 - col : col, row + 3 + Math.round((col - 3) * s), 1, 1);
+      }
+      out.push(c);
+    }
+    return out;
+  }
+
+  drawPerson(ctx, x, y, look, frame, sitting) {
+    var self = this, px = function (c, dx, dy) { ctx.fillStyle = self.dim(c); ctx.fillRect(x + dx, y + dy, 1, 1); };
+    if (look.kid) {
+      px(look.hair, 1, 2); px(look.skin, 1, 3);
+      px(look.top, 0, 4); px(look.top, 1, 4); px(look.top, 2, 4);
+      if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
+      return;
+    }
+    px(look.hair, 1, 0); px(look.skin, 1, 1);
+    px(look.top, 0, 2); px(look.top, 1, 2); px(look.top, 2, 2); px(look.top, 1, 3);
+    if (sitting) { px(look.legs, 1, 4); px(look.legs, 2, 4); return; }
+    px(look.legs, 1, 4);
+    if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
+  }
+
+  dim(hex) {
+    var n = this.nightAmt || 0;
+    if (n <= 0.01) return hex;
+    var q = Math.round(n * 20) / 20, key = hex + q;
+    this._dimC = this._dimC || {};
+    if (this._dimC[key]) return this._dimC[key];
+    var v = parseInt(hex.slice(1), 16);
+    var r = Math.round(((v >> 16) & 255) * (1 - 0.5 * q)), g = Math.round(((v >> 8) & 255) * (1 - 0.45 * q)), b = Math.min(255, Math.round((v & 255) * (1 - 0.3 * q) + 10 * q));
+    return (this._dimC[key] = 'rgb(' + r + ',' + g + ',' + b + ')');
+  }
+
+  makeCloudSprites() {
+    var seed = 3;
+    var rnd = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    var defs = [[0.2, 20, 40], [0.3, 40, 150], [0.45, 30, 250], [0.65, 52, 90], [0.8, 34, 205], [1.0, 58, 300]];
+    var out = [];
+    for (var i = 0; i < defs.length; i++) {
+      var dp = defs[i][0], sz = 5 + dp * 11, cw = Math.ceil(sz * 5.2) + 6, ch = Math.ceil(sz * 2.4) + 6;
+      var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+      this.cloud(c.getContext('2d'), cw / 2, sz * 1.5 + 2, sz, rnd);
+      out.push({ day: c, night: this.darkenCanvas(c).c, x: defs[i][2] - cw / 2, y: defs[i][1] - sz * 1.5 - 2, v: 0.025 + dp * 0.14, a: 0.5 + dp * 0.5 });
+    }
+    this.cloudSprites = out;
+  }
+
+  drawLayer(name) {
+    var ctx = this.ctx, n = this.nightAmt || 0, self = this;
+    var one = function (season, alpha) {
+      if (alpha <= 0) return;
+      ctx.globalAlpha = alpha; ctx.drawImage(self.days[season][name], 0, 0);
+      if (n > 0.001) { ctx.globalAlpha = alpha * n; ctx.drawImage(self.nights[season][name], 0, 0); }
+    };
+    if (this.prevSeason && this.seasonFade < 1) { one(this.prevSeason, 1); one(this.season, this.seasonFade); }
+    else one(this.season, 1);
+    ctx.globalAlpha = 1;
+  }
+
+  tint(strength, h) {
+    var d = Math.sin(Math.PI * (this.nightAmt || 0));
+    if (d <= 0.01) return;
+    this.ctx.fillStyle = 'rgba(255, 128, 72, ' + (strength * d).toFixed(3) + ')';
+    this.ctx.fillRect(0, 0, this.W, h);
+  }
+
+  toLocal(e) {
+    var r = this.canvas.getBoundingClientRect();
+    return [(e.clientX - r.left) / r.width * this.W, (e.clientY - r.top) / r.height * this.H];
+  }
+  onMove = (e) => {
+    if (!this.canvas || this.mode === 'survive') return;
+    if (e.pointerType !== 'mouse' && !this.hawk.down) return;
+    var p = this.toLocal(e);
+    this.hawk.on = true; this.hawk.x = p[0]; this.hawk.y = p[1];
+  };
+  onDown = (e) => {
+    this.hawk.down = true;
+    this.onMove(e);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+  };
+  onUp = (e) => { this.hawk.down = false; if (e.pointerType !== 'mouse') this.hawk.on = false; };
+  onLeave = () => { this.hawk.on = false; this.hawk.down = false; };
+
+  setW(key, v) {
+    if (isNaN(v)) return;
+    this.w[key] = v;
+    var s = {}; s[key] = v; this.setState(s);
+  }
+  onSep = (e) => this.setW('sep', parseFloat(e.target.value));
+  onAli = (e) => this.setW('ali', parseFloat(e.target.value));
+  onCoh = (e) => this.setW('coh', parseFloat(e.target.value));
+  onCount = (e) => { var v = parseInt(e.target.value, 10); if (isNaN(v)) return; this.count = v; this.setState({ count: v }); };
+  preset(s, a, c) { this.w = { sep: s, ali: a, coh: c }; this.setState({ sep: s, ali: a, coh: c }); }
+  presetTight = () => this.preset(0.6, 2.0, 1.8);
+  presetChaos = () => this.preset(3.0, 0, 0);
+  toggleSight = () => { this.sightOn = !this.sightOn; this.setState({ sight: this.sightOn }); };
+  toggleAuto = () => { var on = !(this.state && this.state.auto); this.autoClock = 0; this.setState({ auto: on }); };
+
+  handler(key, fn) {
+    this._h = this._h || {};
+    if (!this._h[key]) this._h[key] = fn;
+    return this._h[key];
+  }
+  toggles(items, cur, prefix, apply) {
+    var self = this;
+    return items.map(function (it) {
+      return { label: it[1], on: cur === it[0], off: cur !== it[0], pick: self.handler(prefix + it[0], function () { apply(it[0]); }) };
+    });
+  }
+
+  setPortrait = (el) => { this.portrait = el; this.drawPortrait(); };
+  drawFlakes() {
+    var ctx = this.ctx, F = this.flakes || [], n = this.nightAmt || 0;
+    for (var i = F.length - 1; i >= 0; i--) {
+      var f = F[i]; f.ph += 0.03;
+      if (f.dying && f.ff && Math.random() < 0.01) { F.splice(i, 1); continue; }
+      if (f.ff) {
+        if (n < 0.05 || Math.sin(f.ph * 3) < 0.2) continue;
+        var fx2 = Math.round(f.x + Math.sin(f.ph) * 6), fy2 = Math.round(f.y + Math.cos(f.ph * 0.7) * 4);
+        this.glow(fx2, fy2, 2, f.c, 0.5 * n);
+        ctx.globalAlpha = n; ctx.fillStyle = f.c;
+        ctx.fillRect(fx2, fy2, 1, 1);
+        ctx.globalAlpha = 1;
+        continue;
+      }
+      if (f.tree) {
+        if (f.wait > 0) { f.wait--; continue; }
+        f.ph += 0.04;
+        f.y += f.v + Math.max(0, Math.sin(f.ph * 1.3)) * 0.05;
+        f.x += f.vx + Math.sin(f.ph) * 0.18;
+        var land = f.land || (f.land = 160 + Math.random() * 18);
+        if (f.y >= land) {
+          f.rest = (f.rest || 0) + 1;
+          f.y = land;
+          if (f.rest > 240) { if (f.dying) { F.splice(i, 1); continue; } f.rest = 0; f.land = 0; f.y = 116 + Math.random() * 16; f.x = Math.random() * this.W; f.wait = Math.floor(Math.random() * 300); continue; }
+          ctx.globalAlpha = 1 - f.rest / 240;
+        }
+        if (f.x > this.W + 2) f.x = -2;
+        ctx.fillStyle = f.c; ctx.fillRect(Math.round(f.x), Math.round(f.y), 1, 1);
+        ctx.globalAlpha = 1;
+        continue;
+      }
+      f.y += f.v;
+      if (f.y > this.H) { if (f.dying) { F.splice(i, 1); continue; } f.y = -2; f.x = Math.random() * this.W; }
+      ctx.fillStyle = f.c;
+      ctx.fillRect(Math.round(f.x + Math.sin(f.ph) * 2), Math.round(f.y), 1, 1);
+    }
+  }
+
+  step() {
+    var B = this.birds, n = B.length, W = this.W, G = this.FLOOR + 6;
+    var wS = this.w.sep, wA = this.w.ali, wC = this.w.coh;
+    var R2 = this.spec.R * this.spec.R, S2 = this.spec.S * this.spec.S, MAXS = 1.4, MINS = 0.5, MAXF = 0.045;
+    var steer = function (b, dx, dy, max) {
+      var m = Math.hypot(dx, dy);
+      if (m < 1e-6) return [0, 0];
+      var sx = dx / m * max - b.vx, sy = dy / m * max - b.vy, f = Math.hypot(sx, sy);
+      if (f > MAXF) { sx = sx / f * MAXF; sy = sy / f * MAXF; }
+      return [sx, sy];
+    };
+    var threat = null;
+    if (this.mode === 'survive' && this.falcon) threat = this.falcon;
+    else if (this.hawk.on) threat = this.hawk;
+    var i, j, b;
+    for (i = 0; i < n; i++) {
+      b = B[i];
+      var ax = 0, ay = 0, cnt = 0, avx = 0, avy = 0, cx = 0, cy = 0, sx = 0, sy = 0, sc = 0;
+      for (j = 0; j < n; j++) {
+        if (i === j) continue;
+        var o = B[j], dx = o.x - b.x, dy = o.y - b.y, d2 = dx * dx + dy * dy;
+        if (d2 < R2) {
+          cnt++; avx += o.vx; avy += o.vy; cx += o.x; cy += o.y;
+          if (d2 < S2 && d2 > 0.0001) { sx -= dx / d2; sy -= dy / d2; sc++; }
+        }
+      }
+      b.nb = cnt;
+      if (cnt) {
+        var s1 = steer(b, avx, avy, MAXS); ax += s1[0] * wA; ay += s1[1] * wA;
+        var s2 = steer(b, cx / cnt - b.x, cy / cnt - b.y, MAXS); ax += s2[0] * wC; ay += s2[1] * wC;
+      }
+      if (sc) { var s3 = steer(b, sx, sy, MAXS); ax += s3[0] * wS * 1.5; ay += s3[1] * wS * 1.5; }
+      if (b.y < 14) ay += (14 - b.y) * 0.012;
+      if (b.y > G - 18) ay -= (b.y - (G - 18)) * 0.02;
+      ax += 0.006;
+      var maxs = MAXS;
+      if (threat) {
+        var hx = b.x - threat.x, hy = b.y - threat.y, hd = Math.hypot(hx, hy);
+        if (hd < 36 && hd > 0.01) { var hf = (1 - hd / 36) * 0.3; ax += hx / hd * hf; ay += hy / hd * hf; maxs = MAXS * 1.3; }
+      }
+      ax += (Math.random() - 0.5) * 0.01; ay += (Math.random() - 0.5) * 0.01;
+      b.nvx = b.vx + ax; b.nvy = b.vy + ay; b.maxs = maxs;
+    }
+    for (i = 0; i < n; i++) {
+      b = B[i];
+      var vx = b.nvx, vy = b.nvy, sp = Math.hypot(vx, vy);
+      if (sp > b.maxs) { vx = vx / sp * b.maxs; vy = vy / sp * b.maxs; }
+      else if (sp < MINS) { if (sp < 1e-6) { vx = MINS; vy = 0; } else { vx = vx / sp * MINS; vy = vy / sp * MINS; } }
+      b.vx = vx; b.vy = vy;
+      b.x += vx; b.y += vy;
+      if (b.y < 3) { b.y = 3; b.vy = Math.abs(b.vy); }
+      if (b.y > G - 6) { b.y = G - 6; b.vy = -Math.abs(b.vy); }
+      if (b.x > W + 6) b.x -= W + 12; else if (b.x < -6) b.x += W + 12;
+      b.ph += 0.18 + Math.hypot(b.vx, b.vy) * 0.08;
+    }
+    for (i = this.puffs.length - 1; i >= 0; i--) {
+      var p = this.puffs[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.02; p.life--;
+      if (p.life <= 0) this.puffs.splice(i, 1);
+    }
+  }
+
+  // ---------- drawing
+  draw() {
+    var ctx = this.ctx, B = this.birds, i;
+    this.drawLayer('sky');
+    var CL = this.cloudSprites || [], nA = this.nightAmt || 0, k60 = (this.frameDt || 16.67) / 16.67;
+    for (i = 0; i < CL.length; i++) {
+      var cl = CL[i]; cl.x += cl.v * k60;
+      if (cl.x > this.W + 4) cl.x = -cl.day.width - 4;
+      ctx.globalAlpha = cl.a; ctx.drawImage(cl.day, cl.x, cl.y);
+      if (nA > 0.001) { ctx.globalAlpha = cl.a * nA; ctx.drawImage(cl.night, cl.x, cl.y); }
+    }
+    ctx.globalAlpha = 1;
+    this.drawSkyFx();
+    this.tint(0.38, 134);
+    this.drawLayer('far');
+    this.drawESBLights();
+    this.drawParty();
+    this.drawTimesSq();
+    this.drawBallDrop();
+    this.drawLayer('bg');
+    this.renderFoliage(false);
+    ctx.drawImage(this.foliD, 0, 0);
+    if ((this.nightAmt || 0) > 0.001) { ctx.globalAlpha = this.nightAmt; ctx.drawImage(this.foliN, 0, 0); ctx.globalAlpha = 1; }
+    this.drawBalloons();
+    this.drawParkFx();
+    this.tint(0.12, this.H);
+    if (this.sightOn && B.length) {
+      var me = B[0], R = this.spec.R;
+      ctx.fillStyle = nA > 0.5 ? '#ffffff' : '#1c1c1c';
+      for (var a = 0; a < Math.PI * 2; a += 0.07) ctx.fillRect(Math.round(me.x + Math.cos(a) * R), Math.round(me.y + Math.sin(a) * R), 1, 1);
+      for (i = 1; i < B.length; i++) {
+        var o = B[i], dx = o.x - me.x, dy = o.y - me.y;
+        if (dx * dx + dy * dy < R * R) {
+          var n = Math.max(Math.abs(dx), Math.abs(dy));
+          for (var s = 0; s <= n; s += 2) ctx.fillRect(Math.round(me.x + dx * s / n), Math.round(me.y + dy * s / n), 1, 1);
+        }
+      }
+      ctx.fillRect(Math.round(me.x) - 1, Math.round(me.y) - 11, 3, 1);
+      ctx.fillRect(Math.round(me.x), Math.round(me.y) - 10, 1, 2);
+    }
+    var ox = this.spec.ox, oy = this.spec.oy;
+    for (i = 0; i < B.length; i++) {
+      var b = B[i];
+      var fr = [0, 1, 2, 1][Math.floor(b.ph) % 4];
+      var ang = Math.atan2(b.vy, Math.abs(b.vx));
+      var k = Math.max(-2, Math.min(2, Math.round(ang / (Math.PI / 8))));
+      ctx.drawImage(this.sprites[((k + 2) * 3 + fr) * 2 + (b.vx < 0 ? 1 : 0)], Math.round(b.x) - ox, Math.round(b.y) - oy);
+    }
+    for (i = 0; i < this.puffs.length; i++) { var p = this.puffs[i]; ctx.fillStyle = p.c; ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1); }
+    if (this.mode === 'survive' && this.falcon) {
+      var f = this.falcon, ff = Math.floor(f.ph) % 2;
+      ctx.drawImage(this.falconSpr[ff * 2 + (f.vx < 0 ? 1 : 0)], Math.round(f.x) - 4, Math.round(f.y) - 2);
+    } else if (this.hawk.on) ctx.drawImage(this.hawkSpr, Math.round(this.hawk.x) - 5, Math.round(this.hawk.y) - 3);
+    this.drawLake();
+    this.drawBanks();
+    this.drawPeopleBehind();
+    this.drawBridgers();
+    this.drawLayer('fg');
+    this.drawBridgeReflection();
+    this.drawShoreFx();
+    this.drawEventProps();
+    this.drawPeople();
+    this.drawFlakes();
+    if (this.bubShow && this.bub) this.drawBubbleAt(this.bub.b.x, this.bub.b.y - 6, this.bub.lines);
+    if (this.tourBub && this.tour && this.tour.state === 'stop') this.drawBubbleAt(this.tour.x + 1, 165, this.tourBub.lines);
+  }
+
+  drawPortrait() {
+    var season = this.season || 'winter';
+    this.spr = this.spr || {};
+    var ks = season + '/starling', kp = season + '/pigeon';
+    if (!this.spr[ks]) this.spr[ks] = this.makeSprites(season);
+    if (!this.spr[kp]) this.spr[kp] = this.makePigeonSprites();
+    var draw = function (c, spr, ox, oy) {
+      if (!c) return;
+      c.width = 11; c.height = 10;
+      var x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+      x.clearRect(0, 0, 11, 10);
+      x.drawImage(spr[(2 * 3 + 1) * 2], ox, oy);
+    };
+    draw(this.portS, this.spr[ks], 2, 0);
+    draw(this.portP, this.spr[kp], 1, -2);
+  }
+
+  setPortraitStarling = (el) => { this.portS = el; if (el) this.drawPortrait(); };
+  setPortraitPigeon = (el) => { this.portP = el; if (el) this.drawPortrait(); };
+  pickStarling = () => this.pickSpecies('starling');
+  pickPigeon = () => this.pickSpecies('pigeon');
+
+  // ---------- speech bubbles
+  updateBubble(t) {
+    var B = this.birds, bb = this.bub;
+    if (bb && B.indexOf(bb.b) < 0) { this.bub = null; this.bubShow = false; bb = null; }
+    if (bb && t < bb.until) return;
+    if (this.bubShow) { this.bubShow = false; this.nextBub = t + 6000 + Math.random() * 7000; }
+    if (!this.nextBub) this.nextBub = t + 3000;
+    if (t < this.nextBub) return;
+    var lines = this.chatter();
+    if (!lines.length || !B.length) return;
+    var cand = [];
+    for (var i = 0; i < B.length; i++) if (B[i].x > 30 && B[i].x < 290 && B[i].y > 30) cand.push(B[i]);
+    if (!cand.length) return;
+    var key = lines.join('\n');
+    if (!this.bag || !this.bag.length || this.bagKey !== key) {
+      this.bagKey = key;
+      this.bag = lines.slice();
+      for (var k = this.bag.length - 1; k > 0; k--) { var r = Math.floor(Math.random() * (k + 1)), tmp = this.bag[k]; this.bag[k] = this.bag[r]; this.bag[r] = tmp; }
+      if (this.bag.length > 1 && this.bag[this.bag.length - 1] === this.lastLine) this.bag.unshift(this.bag.pop());
+    }
+    var txt = this.bag.pop();
+    this.lastLine = txt;
+    this.bub = { b: cand[Math.floor(Math.random() * cand.length)], lines: this.wrap(txt, 18), until: t + 2600 };
+    this.bubShow = true;
+  }
+
+  drawBubbleAt(ax, ay, L) {
+    var ctx = this.ctx, gl = this.glyphs(), W = this.W, max = 0, i;
+    for (i = 0; i < L.length; i++) max = Math.max(max, L[i].length);
+    var w = max * 4 - 1 + 6, h = L.length * 6 - 1 + 6;
+    var bx = Math.round(Math.max(2, Math.min(W - w - 2, ax - w / 2)));
+    var by = Math.round(ay - 3 - h);
+    if (by < 2) by = 2;
+    var tx = Math.round(Math.max(bx + 2, Math.min(bx + w - 3, ax)));
+    ctx.fillStyle = '#1c1c1c'; ctx.fillRect(bx - 1, by - 1, w + 2, h + 2);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(bx, by, w, h);
+    if (by + h + 2 < ay) {
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(tx, by + h, 1, 1);
+      ctx.fillStyle = '#1c1c1c'; ctx.fillRect(tx - 1, by + h, 1, 1); ctx.fillRect(tx + 1, by + h, 1, 1); ctx.fillRect(tx, by + h + 1, 1, 1);
+    }
+    ctx.fillStyle = '#1c1c1c';
+    for (i = 0; i < L.length; i++) for (var c = 0; c < L[i].length; c++) {
+      var g = gl[L[i][c]]; if (!g) continue;
+      for (var r = 0; r < 5; r++) for (var q = 0; q < 3; q++) if (g[r][q] === '1') ctx.fillRect(bx + 3 + c * 4 + q, by + 3 + i * 6 + r, 1, 1);
+    }
+  }
+
+  // ---------- controls
+  reset = () => {
+    if (this.mode !== 'sandbox') { this.startGame(this.mode); return; }
+    this.preset(1.2, 1.0, 1.0); this.spawn(this.count, false);
+  };
+  again = () => this.startGame(this.mode);
+  back = () => this.startGame('sandbox');
+  startDialog = () => { var d = this.state && this.state.dialog; if (d) this.startGame(d); };
+  closeDialog = () => this.setState({ dialog: null });
+  pickMode(m) {
+    if (m === 'sandbox') { if (this.mode !== 'sandbox') this.startGame('sandbox'); else this.setState({ dialog: null }); return; }
+    this.setState({ dialog: m });
+  }
+  pickSpecies(sp) {
+    if (this.species === sp) return;
+    this.setSpecies(sp);
+    this.setState({ species: sp });
+  }
+
+  renderVals() {
+    var s = this.state || {};
+    var self = this;
+    var sep = s.sep ?? 1.2, ali = s.ali ?? 1.0, coh = s.coh ?? 1.0, count = s.count ?? 120;
+    var mode = s.mode || 'sandbox', secs = s.secs ?? 0;
+    var clock = Math.floor(secs / 60) + ':' + (secs % 60 < 10 ? '0' : '') + (secs % 60);
+    var evs = this.events()[s.season || 'winter'];
+    return {
+      accent: this.props.accent ?? '#f5c400',
+      setCanvas: this.setCanvas, setPortraitStarling: this.setPortraitStarling, setPortraitPigeon: this.setPortraitPigeon,
+      pickStarling: this.pickStarling, pickPigeon: this.pickPigeon, isStarling: (s.species || 'starling') === 'starling', isPigeon: s.species === 'pigeon',
+      onMove: this.onMove, onDown: this.onDown, onUp: this.onUp, onLeave: this.onLeave,
+      sep: sep, ali: ali, coh: coh, count: count, countLocked: mode !== 'sandbox',
+      sepLabel: sep.toFixed(1), aliLabel: ali.toFixed(1), cohLabel: coh.toFixed(1),
+      onSep: this.onSep, onAli: this.onAli, onCoh: this.onCoh, onCount: this.onCount,
+      presetTight: this.presetTight, presetChaos: this.presetChaos, reset: this.reset, again: this.again, back: this.back,
+      sight: !!s.sight, toggleSight: this.toggleSight,
+      modes: this.toggles([['sandbox', 'SANDBOX'], ['wrangle', 'WRANGLE'], ['survive', 'SURVIVE THE FALCON']], mode, 'm-', function (m) { self.pickMode(m); }),
+      birdsList: this.toggles([['starling', 'STARLING'], ['pigeon', 'PIGEON']], s.species || 'starling', 'b-', function (v) { self.pickSpecies(v); }),
+      dialogOpen: !!s.dialog, startDialog: this.startDialog, closeDialog: this.closeDialog,
+      hudSurvive: mode === 'survive' && !s.over && !s.dialog, hudWrangle: mode === 'wrangle' && !s.over && !s.dialog,
+      overSurvive: mode === 'survive' && !!s.over, overWrangle: mode === 'wrangle' && !!s.over,
+      alive: s.alive ?? 0, total: s.total ?? 80, clock: clock, flocks: s.flocks ?? 0,
+      survSecs: (s.secs ?? 30) < 10 ? '0:0' + (s.secs ?? 30) : '0:' + (s.secs ?? 30),
+      seasons: this.toggles([['spring', 'SPRING'], ['summer', 'SUMMER'], ['fall', 'FALL'], ['winter', 'WINTER']], s.season || 'winter', 's-', function (v) { self.autoClock = 0; self.setState({ season: v, event: 0, auto: false }); }),
+      eventsList: this.toggles(evs.map(function (e, i) { return [String(i), e.label]; }), String(s.event || 0), 'e-' + (s.season || 'winter') + '-', function (v) { self.autoClock = 0; self.setState({ event: parseInt(v, 10), auto: false }); }),
+      times: this.toggles([['day', 'DAY'], ['night', 'NIGHT']], s.night ? 'night' : 'day', 't-', function (v) { self.autoClock = 0; self.setState({ night: v === 'night', auto: false }); }),
+      autoOn: !!s.auto, autoOff: !s.auto, toggleAuto: this.toggleAuto
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,111 +1,83 @@
 import '../../styles/main.css';
-import { createStage, onDrag, runLoop } from '../../shared/stage';
-import { ArchChallenge, Flock, WORLD, type Hawk, type Params } from './sim';
-import { drawArchBase, drawArchVault, drawHawk, drawPigeon, drawWatched, renderBackground } from './render';
+import { advanceAuto, updateFades } from './scene/calendar';
+import { stepSky } from './scene/holidays';
+import { ensureScene } from './scene/paint';
+import { stepPeople } from './people/crowd';
+import { stepFlock, spawn, syncCount } from './sim/flock';
+import { falconStep, wrangleStep } from './sim/games';
+import { drawFrame } from './render/frame';
+import { updateBubble } from './render/font3x5';
+import { falconSprites, hawkSprite } from './render/sprites';
+import { mountUi } from './ui/controls';
+import { createWorld, type Season, type World } from './world';
 
-const PIGEONS = 80;
-const GOAL = 30;
-const WINDOW_MS = 2000;
+const STEP_MS = 16.67;
 
-const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+const canvas = document.getElementById('scene') as HTMLCanvasElement;
+const w = createWorld(canvas, hawkSprite(), falconSprites());
+spawn(w, w.count, false);
+const ui = mountUi(w);
 
-const canvas = $<HTMLCanvasElement>('stage');
-const hint = $('hint');
-const watchBox = $<HTMLInputElement>('watch');
-const pauseBtn = $<HTMLButtonElement>('pause');
-const challengeEl = $('challenge');
-const meter = $('meter');
-const nowEl = $('now');
-const bestEl = $('best');
-const timeEl = $('time');
-const wonTime = $('won-time');
+let prevT = 0;
+let lastHud = 0;
+let raf = 0;
+let running = false;
 
-const params: Params = { separation: 1.5, alignment: 1.0, cohesion: 1.0 };
-const defaults = { ...params };
-const sliders = (['separation', 'alignment', 'cohesion'] as const).map((key) => {
-  const input = $<HTMLInputElement>(key);
-  const out = $<HTMLOutputElement>(`${key}-out`);
-  const sync = () => {
-    params[key] = Number(input.value);
-    out.value = params[key].toFixed(1);
-  };
-  input.addEventListener('input', sync);
-  sync();
-  return { key, input, sync };
-});
-
-const flock = new Flock(PIGEONS);
-const hawk: Hawk = { x: 730, y: 540, tx: 730, ty: 540, active: false, angle: -Math.PI * 0.75 };
-const challenge = new ArchChallenge(GOAL, WINDOW_MS);
-let simTime = 0;
-let paused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-let background: HTMLCanvasElement | null = null;
-const stage = createStage(canvas, WORLD, (scale) => {
-  background = renderBackground(scale);
-});
-
-onDrag(canvas, WORLD, {
-  start(x, y) {
-    hawk.active = true;
-    hawk.tx = x; hawk.ty = y;
-    hint.classList.add('gone');
-  },
-  move(x, y) { hawk.tx = x; hawk.ty = y; },
-  end() { hawk.active = false; },
-});
-
-$('reset').addEventListener('click', () => {
-  flock.reset();
-  challenge.reset();
-  simTime = 0;
-  Object.assign(params, defaults);
-  for (const s of sliders) { s.input.value = String(defaults[s.key]); s.sync(); }
-  hawk.x = hawk.tx = 730; hawk.y = hawk.ty = 540;
-  updateHud();
-});
-
-const setPaused = (p: boolean) => {
-  paused = p;
-  pauseBtn.textContent = paused ? 'Play' : 'Pause';
-  pauseBtn.setAttribute('aria-pressed', String(paused));
-};
-pauseBtn.addEventListener('click', () => setPaused(!paused));
-setPaused(paused);
-
-function fmt(ms: number) {
-  const s = Math.floor(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
-
-function updateHud() {
-  meter.style.width = `${Math.min(100, (challenge.current / GOAL) * 100)}%`;
-  nowEl.textContent = String(challenge.current);
-  bestEl.textContent = String(challenge.best);
-  timeEl.textContent = fmt(challenge.wonAt ?? simTime);
-  const won = challenge.wonAt !== null;
-  challengeEl.classList.toggle('won', won);
-  if (won) wonTime.textContent = fmt(challenge.wonAt!);
-}
-
-runLoop(canvas, (dt, now) => {
-  if (!paused) {
-    simTime += dt * (1000 / 60);
-    flock.step(params, hawk, dt, (p) => challenge.record(p.id, simTime));
-    challenge.update(simTime);
-    updateHud();
+function tick(t: number) {
+  raf = requestAnimationFrame(tick);
+  const dt = prevT ? Math.min(100, t - prevT) : STEP_MS;
+  prevT = t;
+  w.t = t;
+  w.frameDt = dt;
+  advanceAuto(w, dt);
+  if (ensureScene(w)) ui.portraits();
+  updateFades(w, dt);
+  syncCount(w);
+  // Fixed-rate simulation, at most 4 steps per frame.
+  w.acc += dt;
+  let steps = 0;
+  while (w.acc >= STEP_MS && steps < 4) {
+    stepFlock(w);
+    if (w.mode === 'survive') falconStep(w);
+    if (w.mode === 'wrangle') wrangleStep(w);
+    stepPeople(w);
+    stepSky(w);
+    w.acc -= STEP_MS;
+    steps++;
   }
+  if (steps === 4) w.acc = 0;
+  updateBubble(w);
+  drawFrame(w);
+  if (t - lastHud > 200) { lastHud = t; ui.sync(); }
+}
 
-  const { ctx } = stage;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  if (background) ctx.drawImage(background, 0, 0);
-  stage.begin();
-  drawArchBase(ctx, challenge.wonAt === null);
-  if (watchBox.checked) drawWatched(ctx, flock);
-  for (const p of flock.pigeons) drawPigeon(ctx, p);
-  drawArchVault(ctx);
-  drawHawk(ctx, hawk, now);
-});
+function start() {
+  if (running) return;
+  running = true;
+  prevT = 0;
+  raf = requestAnimationFrame(tick);
+}
+function stop() {
+  running = false;
+  cancelAnimationFrame(raf);
+}
 
-// Expose for debugging in the console.
-Object.assign(window, { __boids: { flock, hawk, params, challenge } });
+// Pause while the scene is off-screen or the tab is hidden.
+let onScreen = true;
+const update = () => (onScreen && !document.hidden ? start() : stop());
+new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; update(); }).observe(canvas);
+document.addEventListener('visibilitychange', update);
+start();
+
+// Dev-only hook for checking seasons and holidays without waiting for the calendar.
+if (import.meta.env.DEV) {
+  Object.assign(window, {
+    __birds: {
+      w,
+      jump(season: Season, event = 0, night = false) {
+        w.calSeason = season; w.event = event; w.night = night; w.autoClock = 0;
+        w.nightAmt = night ? 1 : 0;
+      },
+    } satisfies { w: World; jump: unknown },
+  });
+}

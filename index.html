@@ -4,42 +4,64 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>NYC Algorithms</title>
-    <meta name="description" content="Explorable explanations of algorithms, set in New York City." />
-    <link rel="stylesheet" href="/src/styles/main.css" />
+    <title>NYC Algos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Pixelify+Sans:wght@500;700&family=Silkscreen&display=swap" />
   </head>
   <body>
-    <header class="signbar">
+    <header class="site-header">
       <div class="wrap">
-        <a href="./">NYC Algorithms</a>
-        <div class="rule"></div>
-        <small>All stops</small>
+        <a class="logo" href="./">
+          <svg width="35" height="15" viewBox="0 0 7 3" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="1" height="1" fill="#8a77c4"/><rect x="2" y="1" width="1" height="1" fill="#fff"/><rect x="3" y="1" width="1" height="1" fill="#8a77c4"/><rect x="0" y="2" width="2" height="1" fill="#fff"/><rect x="2" y="2" width="1" height="1" fill="#e9e3cc"/><rect x="3" y="2" width="1" height="1" fill="#fff"/><rect x="4" y="2" width="1" height="1" fill="#5fb39a"/><rect x="5" y="2" width="1" height="1" fill="#fff"/><rect x="6" y="2" width="1" height="1" fill="#f2c230"/></svg>
+          NYC ALGOS
+        </a>
+        <nav aria-label="Main"><a href="#explainers">EXPLAINERS</a></nav>
       </div>
     </header>
-    <main class="wrap">
-      <h1>Algorithms, explained on the streets of New York.</h1>
-      <p class="lede">
-        Short, interactive explainers. Each one has a quick intro, a sandbox you can poke at, and one
-        small challenge.
-      </p>
-      <ul class="stops">
-        <li class="stop">
-          <a href="./explainers/boids/">
-            <span class="bullet" style="--bullet: #ff6319">B</span>
-            <div>
-              <strong>Boids: the pigeons of Washington Square</strong>
-              <span class="desc">Three local rules, one flock. Drag a hawk to scatter it.</span>
-            </div>
+
+    <main class="wrap home">
+      <section class="hero">
+        <div class="panel hero-frame">
+          <canvas id="hero" class="px" width="320" height="90" role="img" aria-label="Pixel-art skyline under a tiled blue sky with a murmuration of starlings"></canvas>
+        </div>
+        <div class="hero-copy">
+          <h1>[HEADLINE]</h1>
+          <div class="btn-row"><a class="btn btn-accent btn-big" href="./explainers/boids/">[BUTTON] →</a></div>
+        </div>
+      </section>
+
+      <section id="explainers">
+        <div class="section-head"><h2>[SECTION]</h2></div>
+        <div class="cards">
+          <a class="card" href="./explainers/boids/">
+            <canvas class="px" data-thumb="birds" width="96" height="54" aria-hidden="true"></canvas>
+            <div class="card-meta"><span class="card-topic">STARLINGS</span><span class="card-badge">PLAY</span></div>
+            <h3>[TITLE]</h3>
           </a>
-        </li>
-        <li class="stop soon">
-          <div>
-            <span class="bullet" style="--bullet: #808183">…</span>
-            <div><strong>More stops coming</strong></div>
+          <div class="card soon">
+            <canvas class="px" data-thumb="subway" width="96" height="54" aria-hidden="true"></canvas>
+            <div class="card-meta"><span class="card-topic">A* SEARCH</span><span class="card-badge">SOON</span></div>
+            <h3>[TITLE]</h3>
           </div>
-        </li>
-      </ul>
+          <div class="card soon">
+            <canvas class="px" data-thumb="braess" width="96" height="54" aria-hidden="true"></canvas>
+            <div class="card-meta"><span class="card-topic">BRAESS’S PARADOX</span><span class="card-badge">SOON</span></div>
+            <h3>[TITLE]</h3>
+          </div>
+          <div class="card soon">
+            <canvas class="px" data-thumb="bridges" width="96" height="54" aria-hidden="true"></canvas>
+            <div class="card-meta"><span class="card-topic">EULER PATHS</span><span class="card-badge">SOON</span></div>
+            <h3>[TITLE]</h3>
+          </div>
+        </div>
+      </section>
     </main>
-    <footer class="wrap">Built with Vite + TypeScript.</footer>
+
+    <footer class="site-footer">
+      <div class="wrap"><span>NYC ALGOS</span><span>BY [YOUR NAME]</span></div>
+    </footer>
+
+    <script type="module" src="/src/home/main.ts"></script>
   </body>
 </html>
