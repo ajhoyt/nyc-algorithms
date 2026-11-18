@@ -8,7 +8,7 @@ import type { Species } from './world';
  * Tour-guide facts. When the tour stops, the guide talks about whichever bird is active
  * (two species facts, then one general fact, cycling). Sources are noted per line.
  */
-export const TOUR_FACTS: Record<Species | 'general', string[]> = {
+export const TOUR_FACTS: Record<Species | 'general' | 'falcon', string[]> = {
   starling: [
     // Release dates: JSTOR Daily, Birds Outside My Window
     'On March 6, 1890, about 60 starlings were set free right here in Central Park.',
@@ -41,26 +41,44 @@ export const TOUR_FACTS: Record<Species | 'general', string[]> = {
     "The head bob keeps a pigeon's view steady while its body moves.",
     "That shimmer on a pigeon's neck isn't pigment. It's light bouncing off the feathers.",
   ],
+  // Peregrines: amNY / NYC DEP (1983 bridges, ~25 pairs by 2019), NYC Audubon
+  falcon: [
+    'Peregrine falcons are the fastest animals on Earth. Their dives top 200 MPH.',
+    'Peregrines first nested in NYC in 1983, on the Verrazzano and Throgs Neck bridges.',
+    'By 2019 about 25 peregrine pairs nested around the city, on bridges and buildings.',
+    'DDT wiped peregrines out of the eastern US by the 1960s. Banning it brought them back.',
+    'Falcons go for the loner. In a tight flock they struggle to pick a target.',
+    "A city peregrine's favorite food? Pigeons. Lots of pigeons.",
+    'Peregrine means wanderer. Some fly thousands of miles between summer and winter homes.',
+    'Male peregrines are about a third smaller than females. Falconers call them tiercels.',
+    'Peregrines strike prey in midair, feet first.',
+  ],
   general: [
     // Wikipedia: "boid" also plays on the New York pronunciation of "bird"
     'Craig Reynolds invented boids in 1986. Fun fact: boid is also how a New Yorker says bird.',
     "Boids follow 3 rules: don't crowd, match your neighbors, stick together. No leader.",
     'The bat swarms and penguin army in Batman Returns were made with boids.',
-    'Peregrine falcons nest on NYC bridges and towers. Their dives top 200 MPH.',
-    'Falcons go for the loner. In a tight flock they struggle to pick a target.',
     // Wikipedia: 927 Fifth Avenue, December 2004
     'Pale Male, a red-tailed hawk, nested on Fifth Ave. In 2004 his nest was torn out. Protests got it back.',
     'Bow Bridge opened in 1862. Cast iron, and still here.',
   ],
 };
 
-/** Order the guide works through: two facts about the active bird, then a general one. */
+/**
+ * Order the guide works through: mostly the active bird, with a general boids fact and, every so
+ * often, a falcon fact mixed in (pattern: bird, bird, general, bird, bird, falcon).
+ */
 export function tourSequence(species: Species): string[] {
-  const s = TOUR_FACTS[species], g = TOUR_FACTS.general, out: string[] = [];
-  for (let i = 0, j = 0; i < s.length || j < g.length; ) {
-    if (i < s.length) out.push(s[i++]);
-    if (i < s.length) out.push(s[i++]);
-    if (j < g.length) out.push(g[j++]);
+  const lists = { s: TOUR_FACTS[species], g: TOUR_FACTS.general, f: TOUR_FACTS.falcon };
+  const idx = { s: 0, g: 0, f: 0 };
+  // Each list cycles on its own, so falcon and general facts stay spread out (1 in 6 each)
+  // instead of bunching up at the end. Ten rounds of the pattern covers every list at least once.
+  const out: string[] = [];
+  for (let round = 0; round < 10; round++) {
+    for (const kind of ['s', 's', 'g', 's', 's', 'f'] as const) {
+      const list = lists[kind];
+      out.push(list[idx[kind]++ % list.length]);
+    }
   }
   return out;
 }
@@ -68,18 +86,16 @@ export function tourSequence(species: Species): string[] {
 /** What birds occasionally say in speech bubbles. Shuffled, no immediate repeats. */
 export const BIRD_CHATTER = [
   "It's all about da Mets!",
-  "Ay, I'm flockin' here!",
+  "Ay, we're flockin' here!",
   'Lemme get a chopped cheese, the flocky way.',
   'Lemmegetabaconeggand- wait, EGGS?',
   'Fuggedaboutit.',
-  'Separation! I need my space.',
   'Cohesion is just peer pressure.',
   'I go where the flock goes.',
-  'Is that a hawk?!',
   'The rent in this tree is insane.',
   "It's B-O-I-D. Boid.",
   'Stand clear of the closing wings.',
-  'Showtime! Showtime!',
+  'Break a wing!',
   'I know a guy.',
   'Two dollars for a slice?! Back in my day...',
   'Pigeons. No offense.',
