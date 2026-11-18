@@ -1,6 +1,7 @@
 // A Parks Department worker who handles the holiday changeover at dawn:
 //   - Christmas starts: drags the tree in, stands it up, plugs it into the lamp post.
-//   - Christmas ends: unplugs it, chops it down, hauls it out.
+//   - New Year's ends: unplugs it, chops it down, hauls it out. (Like the city's trees, it stays
+//     lit through New Year's; the curbside pickup and Mulchfest come in January.)
 //   - Every change: walks the path with a ladder, swapping each lamp post's decoration.
 // Until the worker reaches a lamp, it keeps the old holiday's flag.
 
@@ -14,18 +15,20 @@ const PATH_Y = 166;
 /** Worker's y on the lawn beside the tree (feet at the tree's base). */
 const GRASS_Y = 151;
 const SPOT_X = TREE_X + 4;
+/** Holidays the tree is up for. */
+const TREE_SEASON = ['christmas', 'newyear'];
 
 /** First call each step: decorations and tree match the calendar on page load. */
 function ensureState(w: World) {
   if (w.lampDecor.length !== LAMPS.length) w.lampDecor = LAMPS.map(() => w.evId);
-  if (w.xmasTree === 'unset') w.xmasTree = w.evId === 'christmas' ? 'lit' : 'gone';
+  if (w.xmasTree === 'unset') w.xmasTree = TREE_SEASON.includes(w.evId ?? '') ? 'lit' : 'gone';
 }
 
 /** The holiday just changed: queue up the work (or add to the worker's list). */
 export function callParksCrew(w: World) {
   ensureState(w);
   const jobs: ParksJob[] = [];
-  if (w.prevEvId === 'christmas' && w.xmasTree !== 'gone') jobs.push('treeOut');
+  if (w.prevEvId === 'newyear' && w.xmasTree !== 'gone') jobs.push('treeOut');
   if (w.evId === 'christmas' && w.xmasTree === 'gone') jobs.push('treeIn');
   jobs.push('lamps');
   const p = w.parks;

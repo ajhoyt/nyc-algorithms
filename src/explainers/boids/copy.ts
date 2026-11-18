@@ -72,7 +72,6 @@ export const BIRD_CHATTER = [
   'Lemme get a chopped cheese, the flocky way.',
   'Lemmegetabaconeggand- wait, EGGS?',
   'Fuggedaboutit.',
-  'Who moved my bagel?',
   'Separation! I need my space.',
   'Cohesion is just peer pressure.',
   'I go where the flock goes.',
@@ -82,9 +81,7 @@ export const BIRD_CHATTER = [
   'Stand clear of the closing wings.',
   'Showtime! Showtime!',
   'I know a guy.',
-  "Where's the dollar slice?",
-  'This flock has no boss.',
+  'Two dollars for a slice?! Back in my day...',
   'Pigeons. No offense.',
-  'Next stop: anywhere.',
   "Don't feed the tourists.",
 ];
