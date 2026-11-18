@@ -4,6 +4,7 @@
 import { glow } from '../render/glow';
 import { H, W, type Flake, type Season, type World } from '../world';
 import { ev } from './calendar';
+import { windFactor } from '../sim/wind';
 
 export function makeFlakes(w: World, s: Season) {
   for (const o of w.flakes) o.dying = true;
@@ -27,6 +28,8 @@ export function makeFlakes(w: World, s: Season) {
 
 export function drawFlakes(w: World) {
   const ctx = w.ctx, F = w.flakes, n = w.nightAmt;
+  // Everything drifting (not fireflies) is pushed sideways by the wind.
+  const wf = Math.max(-2.5, Math.min(2.5, windFactor(w)));
   for (let i = F.length - 1; i >= 0; i--) {
     const f = F[i];
     f.ph += 0.03;
@@ -42,7 +45,7 @@ export function drawFlakes(w: World) {
       if ((f.wait ?? 0) > 0) { f.wait!--; continue; }
       f.ph += 0.04;
       f.y += f.v + Math.max(0, Math.sin(f.ph * 1.3)) * 0.05;
-      f.x += (f.vx ?? 0) + Math.sin(f.ph) * 0.18;
+      if (!(f.land && f.y >= f.land)) f.x += (f.vx ?? 0) * wf + Math.sin(f.ph) * 0.18; // settled ones stay put
       const land = f.land || (f.land = 160 + Math.random() * 18);
       if (f.y >= land) {
         f.rest = (f.rest ?? 0) + 1;
@@ -55,11 +58,15 @@ export function drawFlakes(w: World) {
         ctx.globalAlpha = 1 - f.rest / 240;
       }
       if (f.x > W + 2) f.x = -2;
+      else if (f.x < -2) f.x = W + 2;
       ctx.fillStyle = f.c; ctx.fillRect(Math.round(f.x), Math.round(f.y), 1, 1);
       ctx.globalAlpha = 1;
       continue;
     }
     f.y += f.v;
+    f.x += wf * 0.15;
+    if (f.x > W + 2) f.x = -2;
+    else if (f.x < -2) f.x = W + 2;
     if (f.y > H) {
       if (f.dying) { F.splice(i, 1); continue; }
       f.y = -2; f.x = Math.random() * W;

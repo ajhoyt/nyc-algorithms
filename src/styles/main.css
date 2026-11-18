@@ -94,9 +94,10 @@ h1 { margin: 0; font-family: var(--f-head); font-weight: 700; line-height: 1.04;
 .stage { position: relative; padding: 8px; }
 .stage canvas {
   display: block; width: 100%; aspect-ratio: 16 / 9; background: #7db6e8;
-  touch-action: none; cursor: crosshair; -webkit-user-select: none; user-select: none;
+  touch-action: none; cursor: none; /* the hawk is the cursor */ -webkit-user-select: none; user-select: none;
 }
 
+.stage canvas.no-hawk { cursor: default; }
 .hud { position: absolute; left: 18px; top: 18px; display: flex; gap: 8px; font-family: var(--f-label); font-size: 14px; pointer-events: none; }
 .chip { padding: 6px 10px; }
 .chip-ink { background: var(--sign); color: #fff; }

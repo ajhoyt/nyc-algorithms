@@ -40,6 +40,7 @@ export function mountUi(w: World): Ui {
 
   function sync() {
     const mode = w.mode;
+    w.canvas.classList.toggle('no-hawk', mode === 'survive');
     for (const b of $$<HTMLButtonElement>('#modes [data-mode]')) {
       const on = b.dataset.mode === mode;
       b.setAttribute('aria-pressed', String(on));

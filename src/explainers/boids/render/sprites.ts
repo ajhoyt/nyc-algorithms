@@ -71,23 +71,18 @@ export function spriteIndex(frame: number, vx: number, vy: number) {
   return ((k + 2) * 3 + frame) * 2 + (vx < 0 ? 1 : 0);
 }
 
-/** Falcon 9×4, 2 frames × left/right. */
-export function falconSprites(): HTMLCanvasElement[] {
-  const F = [
-    ['..s......', '...ss....', 'ksssssky.', '.....w...'],
-    ['.........', '.........', 'ksssssky.', '..sssw...'],
-  ];
-  const P: Record<string, string> = { s: '#5b6878', k: '#2a2f38', w: '#e8e2d4', y: '#f2c230' };
+function sheet(frames: string[][], P: Record<string, string>): HTMLCanvasElement[] {
+  const w = frames[0][0].length, h = frames[0].length;
   const out: HTMLCanvasElement[] = [];
-  for (let f = 0; f < 2; f++) {
+  for (const F of frames) {
     for (let fl = 0; fl < 2; fl++) {
-      const [c, x] = makeCanvas(9, 4);
-      for (let r = 0; r < 4; r++) {
-        for (let col = 0; col < 9; col++) {
-          const ch = F[f][r][col];
+      const [c, x] = makeCanvas(w, h);
+      for (let r = 0; r < h; r++) {
+        for (let col = 0; col < w; col++) {
+          const ch = F[r][col];
           if (ch === '.') continue;
           x.fillStyle = P[ch];
-          x.fillRect(fl ? 8 - col : col, r, 1, 1);
+          x.fillRect(fl ? w - 1 - col : col, r, 1, 1);
         }
       }
       out.push(c);
@@ -96,19 +91,35 @@ export function falconSprites(): HTMLCanvasElement[] {
   return out;
 }
 
-/** Hawk 11×6 (the player). */
-export function hawkSprite(): HTMLCanvasElement {
-  const pat = ['.....h.....', 'd...hhh...d', 'dddhhhhhddd', '.ddddhdddd.', '....hhh....', '....h.h....'];
-  const [c, x] = makeCanvas(11, 6);
-  for (let r = 0; r < 6; r++) {
-    for (let col = 0; col < 11; col++) {
-      const ch = pat[r][col];
-      if (ch === '.') continue;
-      x.fillStyle = ch === 'h' ? '#8a5530' : '#4a2a14';
-      x.fillRect(col, r, 1, 1);
-    }
-  }
-  return c;
+/** Wing-beat cycle shared by the hawk and falcon: up, level, down, level. */
+export const FLAP = [0, 1, 2, 1];
+
+/** Falcon 9×4 (the AI hunter): 3 flap frames × right/left, indexed frame * 2 + flip. */
+export function falconSprites(): HTMLCanvasElement[] {
+  return sheet(
+    [
+      ['..s......', '...ss....', 'ksssssky.', '.....w...'],
+      ['.........', '..ssss...', 'ksssssky.', '.....w...'],
+      ['.........', '.........', 'ksssssky.', '..sssw...'],
+    ],
+    { s: '#5b6878', k: '#2a2f38', w: '#e8e2d4', y: '#f2c230' },
+  );
+}
+
+/**
+ * Red-tailed hawk 11×7 (the player), side view: dark brown back, pale belly, rufous tail.
+ * 3 flap frames × right/left, indexed frame * 2 + flip. Centre is (5, 3).
+ */
+export function hawkSprites(): HTMLCanvasElement[] {
+  const body = ['rrdddddddey', '.rbbbbbbd..'];
+  return sheet(
+    [
+      ['...kkh.....', '....khh....', '.....hhd...', body[0], body[1], '...........', '...........'],
+      ['...........', '...........', '...khhhhd..', body[0], body[1], '...........', '...........'],
+      ['...........', '...........', '...........', body[0], body[1], '....dhhh...', '...kkh.....'],
+    ],
+    { k: '#3a2414', d: '#6e4424', h: '#8a5530', b: '#e2c49a', r: '#c0582e', e: '#1c1c1c', y: '#f2c230' },
+  );
 }
 
 /** Draws the level, mid-flap portrait used in the bird chooser. */

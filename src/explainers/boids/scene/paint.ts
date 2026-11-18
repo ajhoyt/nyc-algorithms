@@ -9,6 +9,7 @@ import { DX, H, LX0, LX1, W, makeCanvas, rng, type DayLayers, type SceneLayers, 
 import { buildCanopy } from './foliage';
 import { lakeMask } from './lake';
 import { makeFlakes } from './flakes';
+import { windFactor } from '../sim/wind';
 
 export interface SeasonCfg {
   sky: string[];
@@ -348,9 +349,12 @@ export function tint(w: World, strength: number, h: number) {
 
 export function drawClouds(w: World) {
   const ctx = w.ctx, nA = w.nightAmt, k60 = w.frameDt / 16.67;
+  // Clouds ride the wind; nearer (faster) clouds show parallax.
+  const wf = windFactor(w);
   for (const cl of w.cloudSprites ?? []) {
-    cl.x += cl.v * k60;
+    cl.x += cl.v * wf * k60;
     if (cl.x > W + 4) cl.x = -cl.day.width - 4;
+    else if (cl.x < -cl.day.width - 4) cl.x = W + 4;
     ctx.globalAlpha = cl.a; ctx.drawImage(cl.day, cl.x, cl.y);
     if (nA > 0.001) { ctx.globalAlpha = cl.a * nA; ctx.drawImage(cl.night, cl.x, cl.y); }
   }

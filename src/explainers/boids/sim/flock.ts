@@ -2,6 +2,7 @@
 // Birds wrap around left/right and stay between the top of the sky and the tree line.
 
 import { SPECIES } from '../render/sprites';
+import { startWind } from './wind';
 import { FLOOR, W, type Bird, type Species, type World } from '../world';
 
 const MAXS = 1.4;
@@ -9,13 +10,6 @@ const MINS = 0.5;
 const MAXF = 0.045;
 /** Threat radius (logical px) and push strength. */
 const THREAT_R = 36;
-/** Peak wind force, and how long the wind takes to swing east → west → east. */
-const WIND = 0.006;
-const WIND_PERIOD_STEPS = 60 * 90;
-
-/** Current wind: +east / −west. Mostly near full strength, briefly calm while it turns. */
-export const wind = (w: World) => WIND * Math.sin(w.windPh);
-
 export function setSpecies(w: World, sp: Species) {
   w.species = sp;
   w.spec = { ...SPECIES[sp] };
@@ -32,9 +26,9 @@ function newBird(xmin: number, xmax: number, scatter: boolean, dir: number): Bir
 }
 
 export function spawn(w: World, n: number, scatter: boolean) {
-  // Start the wind blowing a random way (with some jitter so it isn't always at full strength).
+  // Start a breeze blowing a random way; the flock sets off with it.
   const dir = Math.random() < 0.5 ? 1 : -1;
-  w.windPh = (dir > 0 ? Math.PI / 2 : -Math.PI / 2) + (Math.random() - 0.5) * 1.5;
+  startWind(w, dir);
   w.birds = [];
   for (let i = 0; i < n; i++) {
     w.birds.push(scatter ? newBird(0, W, true, dir) : dir > 0 ? newBird(8, 130, false, dir) : newBird(W - 130, W - 8, false, dir));
@@ -47,7 +41,7 @@ export function spawn(w: World, n: number, scatter: boolean) {
 export function syncCount(w: World) {
   if (w.mode !== 'sandbox') return;
   const B = w.birds;
-  const dir = wind(w) >= 0 ? 1 : -1;
+  const dir = w.wind.x >= 0 ? 1 : -1;
   while (B.length < w.count) B.push(dir > 0 ? newBird(-6, 40, false, dir) : newBird(W - 40, W + 6, false, dir));
   if (B.length > w.count) { B.length = w.count; w.bub = null; w.bubShow = false; }
 }
@@ -70,8 +64,7 @@ export function stepFlock(w: World) {
   const R2 = w.spec.R * w.spec.R;
   const S2 = w.spec.S * w.spec.S;
   const threat = w.mode === 'survive' && w.falcon ? w.falcon : w.hawk.on ? w.hawk : null;
-  w.windPh += (Math.PI * 2) / WIND_PERIOD_STEPS;
-  const windX = wind(w);
+  const { x: windX, y: windY } = w.wind;
 
   for (let i = 0; i < n; i++) {
     const b = B[i];
@@ -95,6 +88,7 @@ export function stepFlock(w: World) {
     if (b.y < 14) ay += (14 - b.y) * 0.012;
     if (b.y > G - 18) ay -= (b.y - (G - 18)) * 0.02;
     ax += windX;
+    ay += windY;
     let maxs = MAXS;
     if (threat) {
       const hx = b.x - threat.x, hy = b.y - threat.y, hd = Math.hypot(hx, hy);

@@ -1,6 +1,8 @@
 // Shared state for the Central Park birds scene. Every module reads and writes this one object;
 // it plays the role the component instance played in the design prototype.
 
+import { calm, type Wind } from './sim/wind';
+
 export const W = 320;
 export const H = 180;
 /** Lowest y a bird or falcon may reach (just above the tree line). */
@@ -36,7 +38,11 @@ export interface Falcon {
   target: Bird | null; cool: number; retarget: number; ph: number;
 }
 
-export interface Hawk { on: boolean; down: boolean; x: number; y: number }
+export interface Hawk {
+  on: boolean; down: boolean; x: number; y: number;
+  /** Flap phase and facing (+1 right, −1 left), from how the pointer moves. */
+  ph: number; face: number; lastX: number;
+}
 
 export interface Firework { x: number; y: number; t: number; col: string; parts: [number, number][]; s: number }
 
@@ -128,8 +134,8 @@ export interface World {
   oneFor: number;
   flocks: number;
   wt: number;
-  /** Phase of the slow wind that nudges the flock east or west (see sim/flock.ts). */
-  windPh: number;
+  /** Wind over the park (see sim/wind.ts). */
+  wind: Wind;
 
   // --- calendar (the "clock"); auto-cycles
   calSeason: Season;
@@ -185,11 +191,11 @@ export interface World {
   bagKey: string;
   lastLine: string;
 
-  hawkSpr: HTMLCanvasElement;
+  hawkSpr: HTMLCanvasElement[];
   falconSpr: HTMLCanvasElement[];
 }
 
-export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElement, falconSpr: HTMLCanvasElement[]): World {
+export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElement[], falconSpr: HTMLCanvasElement[]): World {
   canvas.width = W * SCALE;
   canvas.height = H * SCALE;
   const ctx = canvas.getContext('2d')!;
@@ -199,8 +205,8 @@ export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElemen
     canvas, ctx, t: 0, frameDt: 16.67, acc: 0,
     mode: 'sandbox', dialog: null, over: false,
     w: { sep: 1.2, ali: 1.0, coh: 1.0 }, count: 120, species: 'starling', spec: { R: 20, S: 6, ox: 3, oy: 5 },
-    sightOn: false, birds: [], puffs: [], falcon: null, hawk: { on: false, down: false, x: 0, y: 0 },
-    timeLeft: 0, elapsed: 0, oneFor: 0, flocks: 0, wt: 0, windPh: 0,
+    sightOn: false, birds: [], puffs: [], falcon: null, hawk: { on: false, down: false, x: 0, y: 0, ph: 0, face: 1, lastX: 0 },
+    timeLeft: 0, elapsed: 0, oneFor: 0, flocks: 0, wt: 0, wind: calm(),
     calSeason: 'winter', event: 0, night: false, autoClock: 0,
     season: null, prevSeason: null, seasonFade: 1, sceneKey: '', days: {}, nights: {}, sprCache: {}, sprites: [],
     cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1,

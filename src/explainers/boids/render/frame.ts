@@ -2,7 +2,7 @@
 // reflection picks them up.
 
 import { drawBubbleAt } from './font3x5';
-import { spriteIndex } from './sprites';
+import { FLAP, spriteIndex } from './sprites';
 import { drawBalloons, drawBallDrop, drawESBLights, drawEventProps, drawJackOLanterns, drawParkFx, drawParty, drawSkyFx, drawTimesSq } from '../scene/holidays';
 import { drawClouds, drawLayer, tint } from '../scene/paint';
 import { drawFoliage } from '../scene/foliage';
@@ -42,9 +42,18 @@ function drawBirds(w: World) {
 function drawPredator(w: World) {
   const ctx = w.ctx;
   if (w.mode === 'survive' && w.falcon) {
-    const f = w.falcon, ff = Math.floor(f.ph) % 2;
-    ctx.drawImage(w.falconSpr[ff * 2 + (f.vx < 0 ? 1 : 0)], Math.round(f.x) - 4, Math.round(f.y) - 2);
-  } else if (w.hawk.on) ctx.drawImage(w.hawkSpr, Math.round(w.hawk.x) - 5, Math.round(w.hawk.y) - 3);
+    const f = w.falcon, fr = FLAP[Math.floor(f.ph) % 4];
+    ctx.drawImage(w.falconSpr[fr * 2 + (f.vx < 0 ? 1 : 0)], Math.round(f.x) - 4, Math.round(f.y) - 2);
+  } else if (w.hawk.on) {
+    // Flaps faster the faster you move it; faces the way it last moved.
+    const h = w.hawk;
+    const speed = Math.min(6, Math.abs(h.x - h.lastX));
+    h.ph += (0.12 + speed * 0.06) * (w.frameDt / 16.67);
+    if (Math.abs(h.x - h.lastX) > 0.4) h.face = h.x > h.lastX ? 1 : -1;
+    h.lastX = h.x;
+    const fr = FLAP[Math.floor(h.ph) % 4];
+    ctx.drawImage(w.hawkSpr[fr * 2 + (h.face < 0 ? 1 : 0)], Math.round(h.x) - 5, Math.round(h.y) - 3);
+  }
 }
 
 export function drawFrame(w: World) {

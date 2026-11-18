@@ -5,16 +5,17 @@ import { ensureScene } from './scene/paint';
 import { stepPeople } from './people/crowd';
 import { stepFlock, spawn, syncCount } from './sim/flock';
 import { falconStep, wrangleStep } from './sim/games';
+import { stepWind } from './sim/wind';
 import { drawFrame } from './render/frame';
 import { updateBubble } from './render/font3x5';
-import { falconSprites, hawkSprite } from './render/sprites';
+import { falconSprites, hawkSprites } from './render/sprites';
 import { mountUi } from './ui/controls';
 import { createWorld, type Season, type World } from './world';
 
 const STEP_MS = 16.67;
 
 const canvas = document.getElementById('scene') as HTMLCanvasElement;
-const w = createWorld(canvas, hawkSprite(), falconSprites());
+const w = createWorld(canvas, hawkSprites(), falconSprites());
 spawn(w, w.count, false);
 const ui = mountUi(w);
 
@@ -37,6 +38,7 @@ function tick(t: number) {
   w.acc += dt;
   let steps = 0;
   while (w.acc >= STEP_MS && steps < 4) {
+    stepWind(w);
     stepFlock(w);
     if (w.mode === 'survive') falconStep(w);
     if (w.mode === 'wrangle') wrangleStep(w);
