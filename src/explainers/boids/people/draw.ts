@@ -8,6 +8,7 @@ import { BENCH_Y, drawBusker, drawChess, drawCrew, drawMascot, drawStatue } from
 import { drawTour } from './tour';
 import { drawParks } from './parks';
 import { drawFan, drawRunner } from './marathon';
+import { drawBunny, drawLawnEggs, drawSanta } from './parades';
 import type { Actor, Walker } from '../world';
 
 export function drawPerson(w: World, x: number, y: number, look: Look, frame: number, sitting: boolean) {
@@ -17,7 +18,7 @@ export function drawPerson(w: World, x: number, y: number, look: Look, frame: nu
     px(look.hair, 1, 2); px(look.skin, 1, 3);
     px(look.top, 0, 4); px(look.top, 1, 4); px(look.top, 2, 4);
     if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
-    if (look.costume) drawCostume(look, px);
+    if (look.costume || look.hat) drawCostume(look, px);
     return;
   }
   px(look.hair, 1, 0); px(look.skin, 1, 1);
@@ -27,7 +28,7 @@ export function drawPerson(w: World, x: number, y: number, look: Look, frame: nu
     px(look.legs, 1, 4);
     if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
   }
-  if (look.costume) drawCostume(look, px);
+  if (look.costume || look.hat) drawCostume(look, px);
 }
 
 const PRIDE = ['#e0302a', '#f5a030', '#f5e26a', '#2e9e4b', '#1f5fa6', '#8a4fc0'];
@@ -169,6 +170,7 @@ export function drawPeople(w: World) {
   const dot = dotter(w);
   drawSkatersFront(w);
   drawSnowman(w, dot);
+  drawLawnEggs(w);
   // Bench, on the lawn in front of the path (sitters' y + 3 is the backrest, + 5 the seat)
   const by = BENCH_Y;
   for (let b = 0; b < 9; b++) { dot('#7a5a3a', 205 + b, by + 5); dot('#5a4028', 205 + b, by + 3); }
@@ -182,6 +184,8 @@ export function drawPeople(w: World) {
   if (w.parks) list.push({ y: w.parks.y, draw: () => drawParks(w, dot) });
   for (const r of w.runners) list.push({ y: r.y, draw: () => drawRunner(w, r, dot) });
   for (const f of w.fans) list.push({ y: f.y, draw: () => drawFan(w, f, dot) });
+  for (const s of w.santas) list.push({ y: s.y, draw: () => drawSanta(w, s, dot) });
+  if (w.bunny.state !== 'gone') list.push({ y: 166, draw: () => drawBunny(w, dot) });
   list.sort((p, q) => p.y - q.y);
   for (const it of list) it.draw();
   drawGames(w, dot);

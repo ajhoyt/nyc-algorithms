@@ -38,6 +38,41 @@ export const COSTUMES: Record<string, Costume> = {
 
 const IDS = Object.keys(COSTUMES);
 
+/** Not picked at random for Halloween; used by SantaCon. */
+export const SANTACON: Record<string, Costume> = {
+  santa: { hair: '#e0302a', top: '#e0302a', legs: '#e0302a', extras: [[2, -1, '#e0302a'], [3, -1, '#ffffff'], [1, 2, '#ffffff'], [1, 3, K]] },
+  elf: { hair: '#2e9e4b', top: '#2e9e4b', legs: '#e0302a', extras: [[1, -1, '#2e9e4b'], [2, -2, '#e0302a'], [0, 1, '#f1c9a5'], [2, 1, '#f1c9a5']] },
+  reindeer: { skin: '#8a5a30', hair: '#8a5a30', top: '#8a5a30', legs: '#6b4424', extras: [[0, -1, '#c9a050'], [-1, -2, '#c9a050'], [2, -1, '#c9a050'], [3, -2, '#c9a050'], [1, 1, '#e0302a']] },
+};
+
+/**
+ * Easter Parade bonnets (Fifth Avenue's tradition of over-the-top hats). Drawn above the head;
+ * the brim covers the hair.
+ */
+export const BONNETS: Record<string, Px[]> = {
+  flowers: [[-1, 0, '#e8d8a8'], [0, 0, '#e8d8a8'], [1, 0, '#e8d8a8'], [2, 0, '#e8d8a8'], [3, 0, '#e8d8a8'], [0, -1, '#f4b6c8'], [1, -1, '#f4b6c8'], [2, -1, '#f4b6c8'], [0, -2, '#f08aa8'], [1, -2, '#ffffff'], [2, -2, '#f5e26a']],
+  bunny: [[0, -1, '#ffffff'], [2, -1, '#ffffff'], [0, -2, '#ffffff'], [2, -2, '#ffffff'], [0, -3, '#ffffff'], [2, -3, '#ffffff'], [1, -1, '#f4b6c8']],
+  tower: [[0, 0, '#b58ae0'], [2, 0, '#b58ae0'], [1, -1, '#9fd6c0'], [1, -2, '#f5e26a'], [1, -3, '#f4b6c8'], [1, -4, '#b58ae0'], [0, -5, '#f08aa8'], [2, -5, '#f08aa8'], [1, -5, '#ffffff']],
+  empire: [[0, 0, '#cfd6dd'], [1, 0, '#cfd6dd'], [2, 0, '#cfd6dd'], [0, -1, '#cfd6dd'], [1, -1, '#cfd6dd'], [2, -1, '#cfd6dd'], [1, -2, '#cfd6dd'], [1, -3, '#cfd6dd'], [1, -4, '#8a949e']],
+  eggs: [[-1, 0, '#c9a050'], [0, 0, '#c9a050'], [1, 0, '#c9a050'], [2, 0, '#c9a050'], [3, 0, '#c9a050'], [0, -1, '#7fc8f0'], [1, -1, '#f4b6c8'], [2, -1, '#f5e26a'], [1, -2, '#9fd6c0']],
+};
+const BONNET_IDS = Object.keys(BONNETS);
+
+export function giveBonnet(L: Look): Look {
+  L.hat = L.kid ? 'bunny' : BONNET_IDS[Math.floor(Math.random() * BONNET_IDS.length)];
+  return L;
+}
+
+export function dressAs(L: Look, id: string): Look {
+  const c = SANTACON[id];
+  if (c.skin) L.skin = c.skin;
+  if (c.hair) L.hair = c.hair;
+  if (c.top) L.top = c.top;
+  if (c.legs) L.legs = c.legs;
+  L.costume = id;
+  return L;
+}
+
 /** Dresses a look in a random costume (mutates and returns it). Kids also get a candy bucket. */
 export function dressForHalloween(L: Look): Look {
   const id = IDS[Math.floor(Math.random() * IDS.length)];
@@ -52,13 +87,14 @@ export function dressForHalloween(L: Look): Look {
 
 /** Plots a costume's extra pixels. `px(colour, dx, dy)` draws relative to the person. */
 export function drawCostume(look: Look, px: (c: string, dx: number, dy: number) => void) {
-  const c = look.costume ? COSTUMES[look.costume] : null;
+  const c = look.costume ? COSTUMES[look.costume] ?? SANTACON[look.costume] : null;
   if (c) {
     for (const [dx, dy, col] of c.extras) {
       if (look.kid) { if (dy < 3) px(col, dx, dy + 2); }
       else px(col, dx, dy);
     }
   }
-  // Trick-or-treat bucket
-  if (look.kid && look.costume) { px('#e3842f', 3, 5); px(K, 3, 4); }
+  // Trick-or-treat bucket (Halloween costumes only)
+  if (look.kid && look.costume && COSTUMES[look.costume]) { px('#e3842f', 3, 5); px(K, 3, 4); }
+  if (look.hat) for (const [dx, dy, col] of BONNETS[look.hat] ?? []) px(col, dx, look.kid ? dy + 2 : dy);
 }

@@ -93,4 +93,5 @@ export function drawFrame(w: World) {
   drawFlakes(w);
   if (w.bubShow && w.bub) drawBubbleAt(w, w.bub.b.x, w.bub.b.y - 6, w.bub.lines);
   if (w.tourBub && w.tour.state === 'stop') drawBubbleAt(w, w.tour.x + 1, 165, w.tourBub.lines);
+  if (w.santaBub) drawBubbleAt(w, w.santaBub.s.x + 1, w.santaBub.s.y - 3, w.santaBub.lines);
 }

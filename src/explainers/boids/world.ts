@@ -3,6 +3,7 @@
 
 import { calm, type Wind } from './sim/wind';
 import type { Fan, Runner } from './people/marathon';
+import type { Bunny, LawnEgg, Santa } from './people/parades';
 
 export const W = 320;
 export const H = 180;
@@ -23,8 +24,10 @@ export interface Look {
   skin: string; hair: string; top: string; legs: string; kid: boolean; bib?: boolean;
   /** Carrying a little rainbow flag (Pride). */
   flag?: boolean;
-  /** Halloween costume id (see people/costumes.ts). */
+  /** Halloween/SantaCon costume id (see people/costumes.ts). */
   costume?: string;
+  /** Easter bonnet id. */
+  hat?: string;
 }
 
 export interface Bird {
@@ -183,6 +186,12 @@ export interface World {
   /** Marathon day (see people/marathon.ts). */
   runners: Runner[];
   fans: Fan[];
+  /** SantaCon and the Easter Bunny (see people/parades.ts). */
+  santas: Santa[];
+  santaconDone: boolean;
+  santaBub: { s: Santa; lines: string[]; until: number } | null;
+  bunny: Bunny;
+  lawnEggs: LawnEgg[];
   nightClock: number;
   dropped: boolean;
   fireworks: Firework[];
@@ -234,7 +243,7 @@ export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElemen
     timeLeft: 0, elapsed: 0, oneFor: 0, flocks: 0, wt: 0, wind: calm(),
     calSeason: 'winter', event: 0, night: false, autoClock: 0,
     season: null, prevSeason: null, seasonFade: 1, sceneKey: '', days: {}, nights: {}, sprCache: {}, sprites: [],
-    cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1, esbEvId: null, lampDecor: [], parks: null, xmasTree: 'unset', runners: [], fans: [],
+    cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1, esbEvId: null, lampDecor: [], parks: null, xmasTree: 'unset', runners: [], fans: [], santas: [], santaconDone: false, santaBub: null, bunny: { x: -10, dir: 1, ph: 0, state: 'gone', t: 0, cool: 200 }, lawnEggs: [],
     nightClock: 0, dropped: false, fireworks: [], flakes: [], flakeEv: null, balloons: null, boats: null,
     walkers: [], fx: [], actors: null, board: [], tour: { state: 'gone', cool: 240, x: -30, dir: 1, t: 0 },
     discT: 0, ballT: 0, ball: { from: 0, t: 0, hold: 60, miss: false }, bridgers: [], skaters: [],

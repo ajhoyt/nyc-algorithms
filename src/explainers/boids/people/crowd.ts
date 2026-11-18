@@ -6,11 +6,12 @@ import { DX, W, pick, type Look, type Role, type Walker, type World } from '../w
 import { coupleChance, crowd, dayPhase, ev, openHours } from '../scene/calendar';
 import { addSkater, launchBoat, stepSkaters } from '../scene/lake';
 import { makeActors, placeNow, stepActors, wants } from './performers';
-import { dressForHalloween } from './costumes';
+import { dressForHalloween, giveBonnet } from './costumes';
 import { stepTour } from './tour';
 import { stepBridge } from './bridge';
 import { stepParks } from './parks';
 import { raceOn, stepMarathon } from './marathon';
+import { stepBunny, stepSantaCon } from './parades';
 
 const SKINS = ['#f1c9a5', '#d9a07a', '#a86b4a', '#7a4a30', '#e8b48e'];
 const HAIRS = ['#2a1f1a', '#5a3a22', '#c9a050', '#1c1c1c', '#8a8a8a'];
@@ -28,7 +29,8 @@ export function lookFor(w: World, kid: boolean): Look {
   const L: Look = { skin, hair: T.hats ? pick(T.hats) : pick(HAIRS), top: pick(T.tops), legs: legs === 'skin' ? skin : legs, kid };
   const e = ev(w).id, r = Math.random();
   if (e === 'stpatricks' && r < 0.7) { L.top = pick(['#2e9e4b', '#3fbf5f', '#1f7a3a']); if (r < 0.3) L.hair = '#2e9e4b'; }
-  if (e === 'easter' && r < 0.5) L.hair = pick(['#f4b6c8', '#b58ae0', '#f5e26a', '#9fd6c0']);
+  // Easter: the Fifth Avenue Easter Parade, i.e. bonnets.
+  if (e === 'easter' && Math.random() < (kid ? 0.5 : 0.65)) giveBonnet(L);
   if (e === 'pride' && r < 0.7) L.top = pick(['#e0302a', '#f5a030', '#f5e26a', '#2e9e4b', '#1f5fa6', '#8a4fc0']);
   if (e === 'pride' && !kid && Math.random() < 0.35) L.flag = true;
   // Halloween: most adults and nearly all kids are in costume (classic and New York).
@@ -230,6 +232,8 @@ export function stepPeople(w: World) {
   stepSkaters(w);
   stepParks(w);
   stepMarathon(w);
+  stepSantaCon(w);
+  stepBunny(w);
   for (let i = w.walkers.length - 1; i >= 0; i--) stepWalker(w, w.walkers[i], i, target);
   stepFx(w);
 }
