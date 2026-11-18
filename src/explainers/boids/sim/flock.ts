@@ -9,6 +9,12 @@ const MINS = 0.5;
 const MAXF = 0.045;
 /** Threat radius (logical px) and push strength. */
 const THREAT_R = 36;
+/** Peak wind force, and how long the wind takes to swing east → west → east. */
+const WIND = 0.006;
+const WIND_PERIOD_STEPS = 60 * 90;
+
+/** Current wind: +east / −west. Mostly near full strength, briefly calm while it turns. */
+export const wind = (w: World) => WIND * Math.sin(w.windPh);
 
 export function setSpecies(w: World, sp: Species) {
   w.species = sp;
@@ -16,8 +22,8 @@ export function setSpecies(w: World, sp: Species) {
   w.season = null; // forces the scene to rebuild sprites without a cross-fade
 }
 
-function newBird(xmin: number, xmax: number, scatter: boolean): Bird {
-  const a = scatter ? Math.random() * Math.PI * 2 : (Math.random() - 0.5) * 0.6;
+function newBird(xmin: number, xmax: number, scatter: boolean, dir: number): Bird {
+  const a = scatter ? Math.random() * Math.PI * 2 : (dir < 0 ? Math.PI : 0) + (Math.random() - 0.5) * 0.6;
   return {
     x: xmin + Math.random() * (xmax - xmin),
     y: scatter ? 10 + Math.random() * 105 : 20 + Math.random() * 80,
@@ -26,17 +32,23 @@ function newBird(xmin: number, xmax: number, scatter: boolean): Bird {
 }
 
 export function spawn(w: World, n: number, scatter: boolean) {
+  // Start the wind blowing a random way (with some jitter so it isn't always at full strength).
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  w.windPh = (dir > 0 ? Math.PI / 2 : -Math.PI / 2) + (Math.random() - 0.5) * 1.5;
   w.birds = [];
-  for (let i = 0; i < n; i++) w.birds.push(scatter ? newBird(0, W, true) : newBird(8, 130, false));
+  for (let i = 0; i < n; i++) {
+    w.birds.push(scatter ? newBird(0, W, true, dir) : dir > 0 ? newBird(8, 130, false, dir) : newBird(W - 130, W - 8, false, dir));
+  }
   w.bub = null;
   w.bubShow = false;
 }
 
-/** Sandbox only: grow or shrink the flock to match the count slider. New birds fly in from the left. */
+/** Sandbox only: grow or shrink the flock to match the count slider. New birds fly in with the wind. */
 export function syncCount(w: World) {
   if (w.mode !== 'sandbox') return;
   const B = w.birds;
-  while (B.length < w.count) B.push(newBird(-6, 40, false));
+  const dir = wind(w) >= 0 ? 1 : -1;
+  while (B.length < w.count) B.push(dir > 0 ? newBird(-6, 40, false, dir) : newBird(W - 40, W + 6, false, dir));
   if (B.length > w.count) { B.length = w.count; w.bub = null; w.bubShow = false; }
 }
 
@@ -58,6 +70,8 @@ export function stepFlock(w: World) {
   const R2 = w.spec.R * w.spec.R;
   const S2 = w.spec.S * w.spec.S;
   const threat = w.mode === 'survive' && w.falcon ? w.falcon : w.hawk.on ? w.hawk : null;
+  w.windPh += (Math.PI * 2) / WIND_PERIOD_STEPS;
+  const windX = wind(w);
 
   for (let i = 0; i < n; i++) {
     const b = B[i];
@@ -77,10 +91,10 @@ export function stepFlock(w: World) {
       const s2 = steer(b, cx / cnt - b.x, cy / cnt - b.y, MAXS); ax += s2[0] * wC; ay += s2[1] * wC;
     }
     if (sc) { const s3 = steer(b, sx, sy, MAXS); ax += s3[0] * wS * 1.5; ay += s3[1] * wS * 1.5; }
-    // Soft ceiling and floor; a gentle eastward drift keeps the flock moving across the park.
+    // Soft ceiling and floor; a gentle wind keeps the flock moving across the park.
     if (b.y < 14) ay += (14 - b.y) * 0.012;
     if (b.y > G - 18) ay -= (b.y - (G - 18)) * 0.02;
-    ax += 0.006;
+    ax += windX;
     let maxs = MAXS;
     if (threat) {
       const hx = b.x - threat.x, hy = b.y - threat.y, hd = Math.hypot(hx, hy);

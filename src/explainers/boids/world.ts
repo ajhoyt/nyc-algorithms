@@ -128,6 +128,8 @@ export interface World {
   oneFor: number;
   flocks: number;
   wt: number;
+  /** Phase of the slow wind that nudges the flock east or west (see sim/flock.ts). */
+  windPh: number;
 
   // --- calendar (the "clock"); auto-cycles
   calSeason: Season;
@@ -198,7 +200,7 @@ export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElemen
     mode: 'sandbox', dialog: null, over: false,
     w: { sep: 1.2, ali: 1.0, coh: 1.0 }, count: 120, species: 'starling', spec: { R: 20, S: 6, ox: 3, oy: 5 },
     sightOn: false, birds: [], puffs: [], falcon: null, hawk: { on: false, down: false, x: 0, y: 0 },
-    timeLeft: 0, elapsed: 0, oneFor: 0, flocks: 0, wt: 0,
+    timeLeft: 0, elapsed: 0, oneFor: 0, flocks: 0, wt: 0, windPh: 0,
     calSeason: 'winter', event: 0, night: false, autoClock: 0,
     season: null, prevSeason: null, seasonFade: 1, sceneKey: '', days: {}, nights: {}, sprCache: {}, sprites: [],
     cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1,
