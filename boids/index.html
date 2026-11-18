@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Boid-watching · NYC Algos</title>
+    <meta name="description" content="No bird is in charge. Each one just watches its neighbors. Somehow, you get a flock." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Pixelify+Sans:wght@500;700&family=Silkscreen&display=swap" />
+  </head>
+  <body>
+    <!-- The scene fills the screen; title, modes and controls float over it. -->
+    <section class="scene" aria-label="Flocking sandbox">
+      <div class="stage">
+        <canvas id="scene" class="px" width="1280" height="720" role="img"
+          aria-label="A pixel-art flock of birds over the lake in Central Park, with Bow Bridge, the Empire State Building and people in the park"></canvas>
+
+        <div class="hud" id="hud-survive" hidden>
+          <span class="chip chip-ink">ALIVE <span data-bind="alive"></span>/<span data-bind="total"></span></span>
+          <span class="chip chip-accent" data-bind="survSecs"></span>
+        </div>
+        <div class="hud" id="hud-wrangle" hidden>
+          <span class="chip chip-ink">FLOCKS <span data-bind="flocks"></span></span>
+          <span class="chip chip-accent" data-bind="clock"></span>
+        </div>
+
+        <div role="dialog" aria-label="Challenge" class="dialog" id="dlg-wrangle" hidden>
+          <p class="dialog-title">[TITLE]</p>
+          <p class="dialog-body">[DESCRIPTION]</p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-accent" data-act="start">START</button>
+            <button type="button" class="btn" data-act="close">BACK</button>
+          </div>
+        </div>
+        <div role="dialog" aria-label="Challenge" class="dialog" id="dlg-survive" hidden>
+          <p class="dialog-title">[TITLE]</p>
+          <p class="dialog-body">[DESCRIPTION]</p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-accent" data-act="start">START</button>
+            <button type="button" class="btn" data-act="close">BACK</button>
+          </div>
+        </div>
+        <div role="dialog" aria-label="Result" class="dialog" id="over-survive" hidden>
+          <p class="dialog-score"><span data-bind="alive"></span> / <span data-bind="total"></span></p>
+          <p class="dialog-body">[RESULT]</p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-accent" data-act="again">AGAIN</button>
+            <button type="button" class="btn" data-act="back">BACK TO SANDBOX</button>
+          </div>
+        </div>
+        <div role="dialog" aria-label="Result" class="dialog" id="over-wrangle" hidden>
+          <p class="dialog-score" data-bind="clock"></p>
+          <p class="dialog-body">[RESULT]</p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-accent" data-act="again">AGAIN</button>
+            <button type="button" class="btn" data-act="back">BACK TO SANDBOX</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel scene-title">
+        <a class="back" href="../">← NYC ALGOS</a>
+        <h1>Boid-watching</h1>
+        <p class="lede">No bird is in charge. Each one just watches its neighbors. Somehow, you get a flock.</p>
+      </div>
+
+      <div class="panel mode-bar">
+        <div role="group" aria-label="Mode" class="btn-row" id="modes">
+          <button type="button" class="btn" data-mode="sandbox" aria-pressed="true">SANDBOX</button>
+          <button type="button" class="btn" data-mode="wrangle" aria-pressed="false">WRANGLE</button>
+          <button type="button" class="btn" data-mode="survive" aria-pressed="false">SURVIVE THE FALCON</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-accent controls-toggle" id="controls-toggle" aria-expanded="false" aria-controls="controls">CONTROLS</button>
+
+      <aside class="panel panel-soft controls" id="controls" aria-label="Controls">
+        <div class="controls-head">
+          <h2 class="label-h">THE BIRDS</h2>
+          <button type="button" class="btn" id="controls-close" aria-label="Close controls">✕</button>
+        </div>
+
+        <div role="group" aria-label="Bird" class="birds">
+          <button type="button" class="bird-pick" data-species="starling" aria-pressed="true">
+            <canvas class="px" id="portrait-starling" width="11" height="10" aria-hidden="true"></canvas>
+            <span>STARLING</span>
+          </button>
+          <button type="button" class="bird-pick" data-species="pigeon" aria-pressed="false">
+            <canvas class="px" id="portrait-pigeon" width="11" height="10" aria-hidden="true"></canvas>
+            <span>PIGEON</span>
+          </button>
+        </div>
+
+        <div class="field">
+          <div class="field-head"><label for="r-count">Birds</label><span data-bind="count"></span></div>
+          <input id="r-count" class="px-range" type="range" min="10" max="250" step="10" value="120" />
+        </div>
+        <div class="field">
+          <div class="field-head"><label for="r-sep">Separation</label><span data-bind="sep"></span></div>
+          <input id="r-sep" class="px-range" type="range" min="0" max="3" step="0.1" value="1.2" />
+        </div>
+        <div class="field">
+          <div class="field-head"><label for="r-ali">Alignment</label><span data-bind="ali"></span></div>
+          <input id="r-ali" class="px-range" type="range" min="0" max="3" step="0.1" value="1" />
+        </div>
+        <div class="field">
+          <div class="field-head"><label for="r-coh">Cohesion</label><span data-bind="coh"></span></div>
+          <input id="r-coh" class="px-range" type="range" min="0" max="3" step="0.1" value="1" />
+        </div>
+
+        <label for="sight" class="check"><input id="sight" type="checkbox" /> [TOGGLE LABEL]</label>
+
+        <div class="btn-row">
+          <button type="button" class="btn" id="preset-tight">TIGHT FLOCK</button>
+          <button type="button" class="btn" id="preset-chaos">CHAOS</button>
+          <button type="button" class="btn btn-accent" id="reset">RESET</button>
+        </div>
+      </aside>
+
+      <a class="chip chip-ink scroll-hint" href="#story">STORY ↓</a>
+    </section>
+
+    <main class="wrap page" id="story">
+      <section class="story" aria-label="Story">
+        <div class="story-art">[ILLUSTRATION: CENTRAL PARK, 1890]</div>
+        <div class="story-text">
+          <h2>[STORY HEADLINE]</h2>
+          <p>[STORY]</p>
+        </div>
+      </section>
+
+      <section class="panel panel-soft credits">
+        <p>Boids: Craig Reynolds, 1987</p>
+        <a class="btn" href="../">NEXT →</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap"><span>NYC ALGOS</span><span>BY [YOUR NAME]</span></div>
+    </footer>
+
+    <script type="module" src="/src/explainers/boids/main.ts"></script>
+  </body>
+</html>

@@ -101,8 +101,22 @@ export function mountUi(w: World): Ui {
       sync();
     });
   }
+  // Controls drawer
+  const drawer = $('#controls');
+  const toggle = $<HTMLButtonElement>('#controls-toggle');
+  const setDrawer = (open: boolean) => {
+    drawer.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.textContent = open ? 'CLOSE' : 'CONTROLS';
+    if (open) $<HTMLButtonElement>('#controls-close').focus();
+  };
+  toggle.addEventListener('click', () => setDrawer(!drawer.classList.contains('open')));
+  $('#controls-close').addEventListener('click', () => { setDrawer(false); toggle.focus(); });
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && w.dialog) { w.dialog = null; sync(); }
+    if (e.key !== 'Escape') return;
+    if (w.dialog) { w.dialog = null; sync(); }
+    else if (drawer.classList.contains('open')) { setDrawer(false); toggle.focus(); }
   });
 
   for (const b of $$<HTMLButtonElement>('[data-species]')) {
@@ -132,8 +146,18 @@ export function mountUi(w: World): Ui {
 
   // Hawk: a mouse controls it just by hovering; touch and pen while pressed.
   const c = w.canvas;
+  // The canvas may be scaled with object-fit (cover on wide screens crops the edges), so map the
+  // pointer through the same fit to get scene coordinates.
   const toLocal = (e: PointerEvent): [number, number] => {
     const r = c.getBoundingClientRect();
+    const fit = getComputedStyle(c).objectFit;
+    if (fit === 'cover' || fit === 'contain') {
+      const sx = r.width / W, sy = r.height / H;
+      const k = fit === 'cover' ? Math.max(sx, sy) : Math.min(sx, sy);
+      // object-position: where the leftover space goes (50% = centred).
+      const [px, py] = getComputedStyle(c).objectPosition.split(' ').map((v) => parseFloat(v) / 100);
+      return [(e.clientX - r.left - (r.width - W * k) * (px || 0.5)) / k, (e.clientY - r.top - (r.height - H * k) * (py ?? 0.5)) / k];
+    }
     return [((e.clientX - r.left) / r.width) * W, ((e.clientY - r.top) / r.height) * H];
   };
   const move = (e: PointerEvent) => {

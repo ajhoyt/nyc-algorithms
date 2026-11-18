@@ -24,12 +24,12 @@ July 4th night). It is not included in production builds.
 
 ```
 index.html                         home page
-explainers/<name>/index.html       one page per explainer (auto-discovered by vite.config.ts)
+<name>/index.html                  one page per explainer, served at /<name>/ (auto-discovered by vite.config.ts)
 src/styles/main.css                shared styles (see docs/handoff/STYLE.md)
 src/shared/pixel.ts                rng, mosaic sky, pixel clouds
 src/home/main.ts                   home hero + thumbnails
 
-src/explainers/boids/              "Birds of Central Park"
+src/explainers/boids/              Boid-watching (page: boids/index.html)
   copy.ts                          owner-edited lists: tour-guide hints, bird chatter
   world.ts                         shared state, constants, types
   main.ts                          loop (fixed 60 Hz sim, pauses off-screen)
@@ -46,11 +46,12 @@ src/explainers/boids/              "Birds of Central Park"
   ui/controls.ts                   DOM: modes, dialogs, HUD, sliders, bird chooser, hawk input
 ```
 
-Page copy (title, intro, hints, dialog text, story) is in `explainers/boids/index.html`.
+Page copy (title, intro, dialog text, story) is in `boids/index.html`. The old address
+`explainers/boids/` is a redirect to `/boids/`.
 
 ## Add an explainer
 
-1. Create `explainers/<name>/index.html` (copy the header/footer from the birds page).
+1. Create `<name>/index.html` at the repo root (copy the structure of `boids/index.html`).
 2. Put its code in `src/explainers/<name>/` and load it with
    `<script type="module" src="/src/explainers/<name>/main.ts">`.
 3. Turn its card on the home page (`index.html`) from `soon` into a link.
