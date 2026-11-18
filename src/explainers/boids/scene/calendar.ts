@@ -73,9 +73,19 @@ export function dayPhase(w: World): number {
 
 /** Target number of walkers: busiest at midday, a few stragglers at night. */
 export function crowd(w: World): number {
-  const dp = dayPhase(w);
-  if (dp < 0) return 1;
-  return Math.round(2 + 6 * Math.sin(Math.PI * Math.min(1, dp * 1.05)));
+  const dp = dayPhase(w), id = ev(w).id;
+  // Romantic nights fill the park: Valentine's, and couples gathering for midnight on New Year's.
+  if (dp < 0) return id === 'newyear' ? 8 : id === 'valentines' ? 5 : 1;
+  return Math.round(2 + 6 * Math.sin(Math.PI * Math.min(1, dp * 1.05))) + (id === 'valentines' || id === 'pride' ? 3 : 0);
+}
+
+/** Share of new walkers who arrive as a couple. */
+export function coupleChance(w: World): number {
+  const dp = dayPhase(w), id = ev(w).id;
+  if (id === 'valentines') return 0.85;
+  if (id === 'pride') return 0.7;
+  if (id === 'newyear' && dp < 0) return 0.8;
+  return dp < 0 || dp > 0.8 ? 0.35 : 0.12;
 }
 
 /** Performers, boats, the tour and kids are out after morning and gone before dark. */

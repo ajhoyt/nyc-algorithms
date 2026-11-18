@@ -79,6 +79,8 @@ if (import.meta.env.DEV) {
       jump(season: Season, event = 0, night = false) {
         w.calSeason = season; w.event = event; w.night = night; w.autoClock = 0;
         w.nightAmt = night ? 1 : 0;
+        w.esbEvId = null;
+        w.nightClock = 0;
       },
     } satisfies { w: World; jump: unknown },
   });

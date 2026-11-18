@@ -3,7 +3,7 @@
 // Valentine's, and some head to the dock to row or skate.
 
 import { DX, W, pick, type Look, type Role, type Walker, type World } from '../world';
-import { crowd, dayPhase, ev, openHours } from '../scene/calendar';
+import { coupleChance, crowd, dayPhase, ev, openHours } from '../scene/calendar';
 import { addSkater, launchBoat, stepSkaters } from '../scene/lake';
 import { makeActors, placeNow, stepActors, wants } from './performers';
 import { stepTour } from './tour';
@@ -27,6 +27,7 @@ export function lookFor(w: World, kid: boolean): Look {
   if (e === 'stpatricks' && r < 0.7) { L.top = pick(['#2e9e4b', '#3fbf5f', '#1f7a3a']); if (r < 0.3) L.hair = '#2e9e4b'; }
   if (e === 'easter' && r < 0.5) L.hair = pick(['#f4b6c8', '#b58ae0', '#f5e26a', '#9fd6c0']);
   if (e === 'pride' && r < 0.7) L.top = pick(['#e0302a', '#f5a030', '#f5e26a', '#2e9e4b', '#1f5fa6', '#8a4fc0']);
+  if (e === 'pride' && !kid && Math.random() < 0.35) L.flag = true;
   if (e === 'halloween') {
     if (r < 0.25) L.hair = L.skin = L.top = L.legs = '#f2f2f2'; // ghost
     else if (r < 0.45) L.top = '#e3842f';
@@ -40,7 +41,7 @@ export function lookFor(w: World, kid: boolean): Look {
 
 export function spawnWalker(w: World, anywhere: boolean) {
   const e = ev(w).id, dp = dayPhase(w);
-  const couple = Math.random() < (e === 'valentines' ? 0.6 : dp < 0 || dp > 0.8 ? 0.35 : 0.12);
+  const couple = Math.random() < coupleChance(w);
   const dir = Math.random() < 0.5 ? 1 : -1;
   const jog = !couple && dp >= 0 && Math.random() < (e === 'marathon' ? 0.65 : dp < 0.25 ? 0.55 : 0.15);
   const look = lookFor(w, false);
@@ -71,6 +72,14 @@ export function addWalkerFromDock(w: World, look: Look | null) {
     x: DX - 1, y: 156, ty: 165 + Math.floor(Math.random() * 2), dir: Math.random() < 0.5 ? 1 : -1, v: 0.2, jog: false,
     ph: 0, look, partner: null, dog: null, state: 'fromDock', t: 0, seen: {},
   });
+}
+
+/** Midnight on New Year's Eve: every couple in the park stops for a kiss. */
+export function midnightKiss(w: World) {
+  for (const wk of w.walkers) {
+    if (wk.partner && (wk.state === 'walk' || wk.state === 'watch')) { wk.state = 'kiss'; wk.t = Math.floor(Math.random() * 20); }
+  }
+  for (const b of w.bridgers) if (b.partner) { b.kiss = true; b.pause = 320; }
 }
 
 export function initPeople(w: World) {
@@ -123,6 +132,8 @@ function stepWalker(w: World, wk: Walker, i: number, target: number): void {
         if (wk.role.boat) wk.role.boat.pending = false;
         wk.role = null;
       }
+      // Valentine's couples leave a trail of little hearts.
+      if (wk.partner && ev(w).id === 'valentines' && Math.random() < 0.004) w.fx.push({ type: 'heart', x: wk.x + 1 - 2 * wk.dir, y: wk.y - 2, life: 70 });
       if (wk.partner && ev(w).id === 'valentines' && !w.proposing && wk.x > 40 && wk.x < 280 && Math.random() < 0.002) {
         wk.state = 'propose'; wk.t = 0; w.proposing = wk;
         return;
@@ -171,6 +182,11 @@ function stepWalker(w: World, wk: Walker, i: number, target: number): void {
         wk.state = 'walk'; wk.dir = 1; wk.x = A.chess.x + 10; w.challenger = null;
       }
       return;
+    case 'kiss':
+      wk.t++;
+      if (wk.t < 260 && wk.t % 26 === 0) w.fx.push({ type: 'heart', x: wk.x + 1 - wk.dir * 2 + (Math.random() - 0.5) * 3, y: wk.y - 3, life: 80 });
+      if (wk.t >= 320) wk.state = 'walk';
+      return;
     case 'propose':
       wk.t++;
       if (wk.t === 150) w.fx.push({ type: 'spark', x: wk.x + 3, y: wk.y + 2, life: 140 });
@@ -200,7 +216,9 @@ function stepFx(w: World) {
 export function stepPeople(w: World) {
   if (!w.actors) initPeople(w);
   const target = crowd(w);
-  if (w.walkers.filter((q) => !q.role).length < target && Math.random() < 0.006) spawnWalker(w, false);
+  // New arrivals trickle in, faster when the park is well short of its crowd (e.g. NYE night).
+  const deficit = target - w.walkers.filter((q) => !q.role).length;
+  if (deficit > 0 && Math.random() < (deficit > 2 ? 0.02 : 0.006)) spawnWalker(w, false);
   stepActors(w);
   stepBall(w);
   stepTour(w);

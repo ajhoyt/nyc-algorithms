@@ -10,7 +10,8 @@ import { drawBanks, drawBoats, drawBridgeReflection, drawLake, drawSkatersBehind
 import { drawFlakes } from '../scene/flakes';
 import { drawBridgers } from '../people/bridge';
 import { drawPeople } from '../people/draw';
-import { H, type World } from '../world';
+import { H, W, type World } from '../world';
+import { drawWindStreaks } from '../sim/wind';
 
 /** "What one bird sees": its neighbourhood radius and dotted lines to every neighbour. */
 function drawSight(w: World) {
@@ -43,16 +44,20 @@ function drawPredator(w: World) {
   const ctx = w.ctx;
   if (w.mode === 'survive' && w.falcon) {
     const f = w.falcon, fr = FLAP[Math.floor(f.ph) % 4];
-    ctx.drawImage(w.falconSpr[fr * 2 + (f.vx < 0 ? 1 : 0)], Math.round(f.x) - 4, Math.round(f.y) - 2);
+    ctx.drawImage(w.falconSpr[spriteIndex(fr, f.vx, f.vy)], Math.round(f.x) - 4, Math.round(f.y) - 6);
   } else if (w.hawk.on) {
-    // Flaps faster the faster you move it; faces the way it last moved.
-    const h = w.hawk;
-    const speed = Math.min(6, Math.abs(h.x - h.lastX));
+    // Velocity comes from how the pointer moves (smoothed). The hawk tilts with it, faces the way
+    // it last moved, and flaps faster the faster it goes.
+    const h = w.hawk, k = Math.min(1, 0.25 * (w.frameDt / 16.67));
+    h.vx += (h.x - h.lastX - h.vx) * k;
+    h.vy += (h.y - h.lastY - h.vy) * k;
+    h.lastX = h.x; h.lastY = h.y;
+    if (Math.abs(h.vx) > 0.2) h.face = h.vx > 0 ? 1 : -1;
+    const speed = Math.min(6, Math.hypot(h.vx, h.vy));
     h.ph += (0.12 + speed * 0.06) * (w.frameDt / 16.67);
-    if (Math.abs(h.x - h.lastX) > 0.4) h.face = h.x > h.lastX ? 1 : -1;
-    h.lastX = h.x;
     const fr = FLAP[Math.floor(h.ph) % 4];
-    ctx.drawImage(w.hawkSpr[fr * 2 + (h.face < 0 ? 1 : 0)], Math.round(h.x) - 5, Math.round(h.y) - 3);
+    const vx = h.face * Math.max(Math.abs(h.vx), 0.6);
+    ctx.drawImage(w.hawkSpr[spriteIndex(fr, vx, h.vy)], Math.round(h.x) - 5, Math.round(h.y) - 7);
   }
 }
 
@@ -66,14 +71,15 @@ export function drawFrame(w: World) {
   drawParty(w);
   drawTimesSq(w);
   drawBallDrop(w);
+  drawBalloons(w);
   drawLayer(w, 'bg');
   drawFoliage(w);
-  drawBalloons(w);
   drawParkFx(w);
   tint(w, 0.12, H);
   drawSight(w);
   drawBirds(w);
   drawPredator(w);
+  drawWindStreaks(w, W);
   drawLake(w);
   drawBanks(w);
   drawSkatersBehind(w);

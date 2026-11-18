@@ -23,10 +23,23 @@ export function drawPerson(w: World, x: number, y: number, look: Look, frame: nu
   if (frame) { px(look.legs, 0, 5); px(look.legs, 2, 5); } else px(look.legs, 1, 5);
 }
 
-/** A person plus extras (marathon bib). */
+const PRIDE = ['#e0302a', '#f5a030', '#f5e26a', '#2e9e4b', '#1f5fa6', '#8a4fc0'];
+
+/** A person plus extras (marathon bib, Pride flag). */
 function drawPersonFull(w: World, x: number, y: number, look: Look, frame: number, sitting: boolean) {
   drawPerson(w, x, y, look, frame, sitting);
-  if (look.bib) { w.ctx.fillStyle = dim(w, '#ffffff'); w.ctx.fillRect(x + 1, y + 2, 1, 1); }
+  const ctx = w.ctx;
+  if (look.bib) { ctx.fillStyle = dim(w, '#ffffff'); ctx.fillRect(x + 1, y + 2, 1, 1); }
+  if (look.flag) {
+    // Pole in the right hand, 2×6 rainbow flag that flutters with the walk.
+    ctx.fillStyle = dim(w, '#5a4028'); ctx.fillRect(x + 3, y - 4, 1, 7);
+    const flutter = frame ? 1 : 0;
+    PRIDE.forEach((c, i) => {
+      ctx.fillStyle = dim(w, c);
+      ctx.fillRect(x + 4, y - 4 + i, 1, 1);
+      ctx.fillRect(x + 5, y - 4 + i + (i < 5 ? flutter : 0), 1, 1);
+    });
+  }
 }
 
 function drawKneel(x: number, y: number, look: Look, dot: Dot) {
@@ -37,7 +50,7 @@ function drawKneel(x: number, y: number, look: Look, dot: Dot) {
 
 function drawWalker(w: World, p: Walker, dot: Dot) {
   const x = Math.round(p.x);
-  const fr = p.state === 'watch' || p.state === 'propose' ? 0 : Math.floor(p.ph) % 2;
+  const fr = p.state === 'watch' || p.state === 'propose' || p.state === 'kiss' ? 0 : Math.floor(p.ph) % 2;
   if (p.state === 'propose' && p.partner) {
     const t = p.t;
     if (t >= 60 && t < 300) drawKneel(x, p.y, p.look, dot);
@@ -47,7 +60,8 @@ function drawWalker(w: World, p: Walker, dot: Dot) {
     return;
   }
   drawPersonFull(w, x, p.y, p.look, fr, false);
-  if (p.partner) drawPersonFull(w, x + 4 * (p.dir > 0 ? -1 : 1), p.y, p.partner, 1 - fr, false);
+  // Partners walk a step behind; when kissing they close the gap.
+  if (p.partner) drawPersonFull(w, x + (p.state === 'kiss' ? 3 : 4) * (p.dir > 0 ? -1 : 1), p.y, p.partner, p.state === 'kiss' ? 0 : 1 - fr, false);
   if (p.dog) {
     const dir = p.state === 'watch' ? (p.face ?? p.dir) : p.dir, dx = x - dir * 6, dy = p.y + 3;
     // Leash, then the dog

@@ -3,12 +3,19 @@
 // hydrant, jack-o'-lanterns, and the snowman.
 
 import { glow } from '../render/glow';
-import { W, dim, dotter, type Dot, type World } from '../world';
+import { W, dim, dotter, type Balloon, type Dot, type World } from '../world';
 import { ev, evAlphaFor, evById, isNight, type HolidayDef } from './calendar';
 import { makeFlakes } from './flakes';
 import { buildCanopy } from './foliage';
 import { stepBoats } from './lake';
+import { midnightKiss } from '../people/crowd';
 import { LAMPS } from './paint';
+
+const PARADE: { kind: Balloon['kind']; y: number }[] = [
+  { kind: 'turkey', y: 78 },
+  { kind: 'pigeon', y: 82 },
+  { kind: 'pizza', y: 79 },
+];
 
 const circleParts = (): [number, number][] =>
   Array.from({ length: 18 }, (_, i) => {
@@ -28,14 +35,13 @@ export function stepSky(w: World) {
     w.fireworks[i].t += 1 / 70;
     if (w.fireworks[i].t >= 1) w.fireworks.splice(i, 1);
   }
-  if (!w.balloons) w.balloons = [{ kind: 'pigeon', x: -40, y: 86, v: 0.12 }, { kind: 'pizza', x: -120, y: 92, v: 0.1 }];
-  const showB = e.id === 'thanksgiving' && !isNight(w);
-  w.balloons.forEach((b, i) => {
-    if (showB || (b.x > -30 && b.x < W + 30)) {
-      b.x += b.v;
-      if (b.x > W + 40) b.x = showB ? -60 - i * 60 : -999;
-    } else if (showB && b.x < -60) b.x = -40 - i * 70;
-  });
+  // Thanksgiving: the parade crosses once, during the day, behind the near skyline.
+  const parade = e.id === 'thanksgiving' && !isNight(w);
+  if (parade && !w.balloons) w.balloons = PARADE.map((p, i) => ({ ...p, x: -30 - i * 70, v: 0.33 }));
+  if (w.balloons) {
+    for (const b of w.balloons) if (b.x <= W + 40) b.x += b.v;
+    if (!parade && w.balloons.every((b) => b.x > W + 40)) w.balloons = null;
+  }
   stepBoats(w);
 }
 
@@ -74,9 +80,11 @@ function drawESBFor(w: World, e: HolidayDef, A: number) {
 
 /** Empire State Building tier colours, cross-fading between holidays. */
 export function drawESBLights(w: World) {
-  const cur = evById(w.evId), prev = evById(w.prevEvId), f = w.evFade;
-  if (prev && f < 1) drawESBFor(w, prev, 1 - f);
-  if (cur) drawESBFor(w, cur, prev && f < 1 ? f : 1);
+  // One set of lights per night: whatever holiday it is at dusk stays lit until the dark has
+  // fully faded at dawn, even though the calendar moves on to the next holiday before sunrise.
+  if (w.nightAmt <= 0.001 || !w.esbEvId) w.esbEvId = w.evId;
+  const e = evById(w.esbEvId);
+  if (e) drawESBFor(w, e, 1);
 }
 
 /** Christmas: a party in a penthouse window. */
@@ -157,6 +165,7 @@ export function drawBallDrop(w: World) {
   ctx.globalAlpha = 1;
   if (p >= 1 && !w.dropped && w.evId === 'newyear') {
     w.dropped = true;
+    midnightKiss(w);
     const cols2 = ['#f5c400', '#ffffff', '#f08aa8', '#7fd6ff', '#9fe870'];
     for (let k = 0; k < 7; k++) {
       w.fireworks.push({ x: 40 + Math.random() * 240, y: 20 + Math.random() * 45, t: -k * 0.12, col: cols2[k % cols2.length], parts: circleParts(), s: 10 + Math.random() * 10 });
@@ -271,13 +280,17 @@ export function drawEventProps(w: World) {
   drawEventPropsFor(w, w.evId, w.prevEvId && w.evFade < 1 ? w.evFade : 1);
 }
 
-/** Thanksgiving parade balloons: a pigeon and a slice of pizza. */
+/**
+ * Thanksgiving parade balloons: a turkey, a pigeon and a slice of pizza. Drawn between the far and
+ * near skylines, so they peek out between buildings like the real parade down the avenues.
+ */
 export function drawBalloons(w: World) {
   const ctx = w.ctx;
   const box = (c: string, x: number, y: number, bw = 1, bh = 1) => { ctx.fillStyle = dim(w, c); ctx.fillRect(Math.round(x), Math.round(y), bw, bh); };
   (w.balloons ?? []).forEach((b, i) => {
     if (b.x < -40 || b.x > W + 40) return;
     const x = b.x, y = b.y + Math.sin(w.t / 900 + i) * 1.5;
+    // Handler lines down to the street (mostly hidden by the near buildings)
     ctx.globalAlpha = 0.6;
     for (let r = 0; r < 4; r++) box('#6b6b6b', x + 2 + r * 4, y + 9, 1, 30);
     ctx.globalAlpha = 1;
@@ -285,6 +298,12 @@ export function drawBalloons(w: World) {
       box('#a3a8b8', x, y + 3, 16, 6); box('#a3a8b8', x + 12, y, 6, 6); box('#5d6275', x + 3, y + 1, 7, 3);
       box('#4fb390', x + 12, y + 5, 4, 2); box('#9a6bc0', x + 14, y + 4, 2, 1); box('#1c1c1c', x + 15, y + 2); box('#f0a848', x + 18, y + 3, 2, 1);
       box('#3a3d4d', x - 3, y + 4, 3, 3); box('#e08a7a', x + 5, y + 9, 1, 2); box('#e08a7a', x + 10, y + 9, 1, 2);
+    } else if (b.kind === 'turkey') {
+      // Tail fan behind the body, then body, head, beak and wattle
+      box('#e0302a', x + 1, y - 2, 9, 2); box('#f5a030', x, y, 11, 2); box('#f5c400', x, y + 2, 11, 2);
+      box('#7a4a24', x + 2, y + 3, 10, 6); box('#5a3418', x + 3, y + 7, 8, 2);
+      box('#8a5a30', x + 12, y + 1, 4, 4); box('#1c1c1c', x + 14, y + 2); box('#f5c400', x + 16, y + 3, 2, 1);
+      box('#e0302a', x + 14, y + 5, 1, 2); box('#e08a3a', x + 5, y + 9, 1, 2); box('#e08a3a', x + 9, y + 9, 1, 2);
     } else {
       for (let row = 0; row < 12; row++) box(row < 2 ? '#c9884a' : '#f5c400', x + row * 0.5, y + row - 1, 16 - row, 1);
       box('#e0302a', x + 4, y + 3, 2, 2); box('#e0302a', x + 9, y + 4, 2, 2); box('#e0302a', x + 6, y + 7, 2, 2);

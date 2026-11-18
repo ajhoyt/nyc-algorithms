@@ -352,7 +352,7 @@ export function drawClouds(w: World) {
   // Clouds ride the wind; nearer (faster) clouds show parallax.
   const wf = windFactor(w);
   for (const cl of w.cloudSprites ?? []) {
-    cl.x += cl.v * wf * k60;
+    cl.x += cl.v * 1.6 * wf * k60;
     if (cl.x > W + 4) cl.x = -cl.day.width - 4;
     else if (cl.x < -cl.day.width - 4) cl.x = W + 4;
     ctx.globalAlpha = cl.a; ctx.drawImage(cl.day, cl.x, cl.y);

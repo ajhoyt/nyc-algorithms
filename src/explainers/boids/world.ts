@@ -20,6 +20,8 @@ export type Species = 'starling' | 'pigeon';
 
 export interface Look {
   skin: string; hair: string; top: string; legs: string; kid: boolean; bib?: boolean;
+  /** Carrying a little rainbow flag (Pride). */
+  flag?: boolean;
 }
 
 export interface Bird {
@@ -40,8 +42,8 @@ export interface Falcon {
 
 export interface Hawk {
   on: boolean; down: boolean; x: number; y: number;
-  /** Flap phase and facing (+1 right, −1 left), from how the pointer moves. */
-  ph: number; face: number; lastX: number;
+  /** Flap phase, facing (+1 right, −1 left) and smoothed velocity, from how the pointer moves. */
+  ph: number; face: number; lastX: number; lastY: number; vx: number; vy: number;
 }
 
 export interface Firework { x: number; y: number; t: number; col: string; parts: [number, number][]; s: number }
@@ -51,7 +53,7 @@ export interface Flake {
   tree?: boolean; vx?: number; wait?: number; ff?: boolean; dying?: boolean; land?: number; rest?: number;
 }
 
-export interface Balloon { kind: 'pigeon' | 'pizza'; x: number; y: number; v: number }
+export interface Balloon { kind: 'turkey' | 'pigeon' | 'pizza'; x: number; y: number; v: number }
 
 export interface Boat {
   slot: number; state: 'docked' | 'out' | 'return'; x: number; y: number; v: number; ph: number;
@@ -63,7 +65,7 @@ export interface Role { boat?: Boat; skate?: boolean }
 export interface Walker {
   x: number; y: number; dir: number; v: number; jog: boolean; ph: number; look: Look;
   partner: Look | null; dog: string | null;
-  state: 'walk' | 'watch' | 'chess' | 'propose' | 'toDock' | 'fromDock';
+  state: 'walk' | 'watch' | 'chess' | 'propose' | 'kiss' | 'toDock' | 'fromDock';
   t: number; seen: Record<string, number>; role?: Role | null; ty?: number;
   target?: Actor; face?: number;
 }
@@ -93,7 +95,7 @@ export interface Tour {
   stopX?: number; stopped?: boolean; guide?: Look; members?: Look[];
 }
 
-export interface Bridger { x: number; dir: number; v: number; ph: number; look: Look; partner: Look | null; pause: number }
+export interface Bridger { x: number; dir: number; v: number; ph: number; look: Look; partner: Look | null; pause: number; kiss?: boolean }
 
 export interface Skater {
   state: 'glideIn' | 'skate' | 'glideOut'; gx: number; gy: number; cx: number; cy: number; rx: number; ry: number;
@@ -159,6 +161,8 @@ export interface World {
   evId: string | null;
   prevEvId: string | null;
   evFade: number;
+  /** Holiday whose colours the Empire State Building shows; locked from dusk until full daylight. */
+  esbEvId: string | null;
   nightClock: number;
   dropped: boolean;
   fireworks: Firework[];
@@ -205,11 +209,11 @@ export function createWorld(canvas: HTMLCanvasElement, hawkSpr: HTMLCanvasElemen
     canvas, ctx, t: 0, frameDt: 16.67, acc: 0,
     mode: 'sandbox', dialog: null, over: false,
     w: { sep: 1.2, ali: 1.0, coh: 1.0 }, count: 120, species: 'starling', spec: { R: 20, S: 6, ox: 3, oy: 5 },
-    sightOn: false, birds: [], puffs: [], falcon: null, hawk: { on: false, down: false, x: 0, y: 0, ph: 0, face: 1, lastX: 0 },
+    sightOn: false, birds: [], puffs: [], falcon: null, hawk: { on: false, down: false, x: 0, y: 0, ph: 0, face: 1, lastX: 0, lastY: 0, vx: 0, vy: 0 },
     timeLeft: 0, elapsed: 0, oneFor: 0, flocks: 0, wt: 0, wind: calm(),
     calSeason: 'winter', event: 0, night: false, autoClock: 0,
     season: null, prevSeason: null, seasonFade: 1, sceneKey: '', days: {}, nights: {}, sprCache: {}, sprites: [],
-    cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1,
+    cloudSprites: null, nightAmt: 0, meltT: 0, puddle: 0, evId: null, prevEvId: null, evFade: 1, esbEvId: null,
     nightClock: 0, dropped: false, fireworks: [], flakes: [], flakeEv: null, balloons: null, boats: null,
     walkers: [], fx: [], actors: null, board: [], tour: { state: 'gone', cool: 240, x: -30, dir: 1, t: 0 },
     discT: 0, ballT: 0, ball: { from: 0, t: 0, hold: 60, miss: false }, bridgers: [], skaters: [],

@@ -71,54 +71,39 @@ export function spriteIndex(frame: number, vx: number, vy: number) {
   return ((k + 2) * 3 + frame) * 2 + (vx < 0 ? 1 : 0);
 }
 
-function sheet(frames: string[][], P: Record<string, string>): HTMLCanvasElement[] {
-  const w = frames[0][0].length, h = frames[0].length;
-  const out: HTMLCanvasElement[] = [];
-  for (const F of frames) {
-    for (let fl = 0; fl < 2; fl++) {
-      const [c, x] = makeCanvas(w, h);
-      for (let r = 0; r < h; r++) {
-        for (let col = 0; col < w; col++) {
-          const ch = F[r][col];
-          if (ch === '.') continue;
-          x.fillStyle = P[ch];
-          x.fillRect(fl ? w - 1 - col : col, r, 1, 1);
-        }
-      }
-      out.push(c);
-    }
-  }
-  return out;
-}
-
 /** Wing-beat cycle shared by the hawk and falcon: up, level, down, level. */
 export const FLAP = [0, 1, 2, 1];
 
-/** Falcon 9×4 (the AI hunter): 3 flap frames × right/left, indexed frame * 2 + flip. */
+/**
+ * Falcon 9×4 (the AI hunter): 3 flap frames × 5 tilts × right/left, same indexing as the birds
+ * (use spriteIndex). The body sits 4px down in a 9×12 canvas; draw at (x − 4, y − 6).
+ */
 export function falconSprites(): HTMLCanvasElement[] {
-  return sheet(
+  const P: Record<string, string> = { s: '#5b6878', k: '#2a2f38', w: '#e8e2d4', y: '#f2c230' };
+  return paint(
     [
       ['..s......', '...ss....', 'ksssssky.', '.....w...'],
       ['.........', '..ssss...', 'ksssssky.', '.....w...'],
       ['.........', '.........', 'ksssssky.', '..sssw...'],
     ],
-    { s: '#5b6878', k: '#2a2f38', w: '#e8e2d4', y: '#f2c230' },
+    9, 12, (ch) => P[ch], 4, 0.4, 8,
   );
 }
 
 /**
  * Red-tailed hawk 11×7 (the player), side view: dark brown back, pale belly, rufous tail.
- * 3 flap frames × right/left, indexed frame * 2 + flip. Centre is (5, 3).
+ * 3 flap frames × 5 tilts × right/left (use spriteIndex). 11×15 canvas; draw at (x − 5, y − 7).
  */
 export function hawkSprites(): HTMLCanvasElement[] {
+  const P: Record<string, string> = { k: '#3a2414', d: '#6e4424', h: '#8a5530', b: '#e2c49a', r: '#c0582e', e: '#1c1c1c', y: '#f2c230' };
   const body = ['rrdddddddey', '.rbbbbbbd..'];
-  return sheet(
+  return paint(
     [
       ['...kkh.....', '....khh....', '.....hhd...', body[0], body[1], '...........', '...........'],
       ['...........', '...........', '...khhhhd..', body[0], body[1], '...........', '...........'],
       ['...........', '...........', '...........', body[0], body[1], '....dhhh...', '...kkh.....'],
     ],
-    { k: '#3a2414', d: '#6e4424', h: '#8a5530', b: '#e2c49a', r: '#c0582e', e: '#1c1c1c', y: '#f2c230' },
+    11, 15, (ch) => P[ch], 4, 0.35, 10,
   );
 }
 
