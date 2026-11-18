@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Boids: the pigeons of Washington Square · NYC Algorithms</title>
+    <meta name="description" content="An explorable explanation of Craig Reynolds' boids flocking algorithm, with pigeons in Washington Square Park." />
+  </head>
+  <body>
+    <header class="signbar">
+      <div class="wrap">
+        <span class="bullet" style="--bullet: #ff6319">B</span>
+        <a href="../../">NYC Algorithms</a>
+        <div class="rule"></div>
+        <small>Washington Sq</small>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <h1>Boids: the pigeons of Washington Square</h1>
+      <p class="lede">
+        No pigeon is in charge. Each one just watches the few birds next to it, and somehow a flock
+        appears.
+      </p>
+      <p>
+        In 1987 Craig Reynolds showed you could fake a convincing flock with three local rules. Each
+        "boid" looks only at neighbours within a small radius and nudges its own heading:
+      </p>
+      <ol class="rules">
+        <li><b class="sep">Separation</b>: don't crowd. Steer away from birds that are too close.</li>
+        <li><b class="ali">Alignment</b>: go with the flow. Turn toward the average heading of your neighbours.</li>
+        <li><b class="coh">Cohesion</b>: stick together. Drift toward the centre of your neighbours.</li>
+      </ol>
+      <p>
+        That's the whole algorithm. Turn the rules up and down below and watch what changes. Press
+        and drag on the park to fly the hawk; every pigeon near it panics and flees.
+      </p>
+
+      <section class="sandbox" aria-label="Boids sandbox">
+        <div class="stage">
+          <canvas id="stage" aria-label="Washington Square Park seen from above, with a flock of pigeons. Press and drag to move the hawk."></canvas>
+          <div id="hint" class="hint">Press and drag to fly the hawk</div>
+        </div>
+        <div class="controls">
+          <div class="slider" style="--c: var(--sep)">
+            <label for="separation"><span><span class="chip"></span>Separation</span><output id="separation-out"></output></label>
+            <input id="separation" type="range" min="0" max="3" step="0.1" value="1.5" />
+          </div>
+          <div class="slider" style="--c: var(--ali)">
+            <label for="alignment"><span><span class="chip"></span>Alignment</span><output id="alignment-out"></output></label>
+            <input id="alignment" type="range" min="0" max="3" step="0.1" value="1" />
+          </div>
+          <div class="slider" style="--c: var(--coh)">
+            <label for="cohesion"><span><span class="chip"></span>Cohesion</span><output id="cohesion-out"></output></label>
+            <input id="cohesion" type="range" min="0" max="3" step="0.1" value="1" />
+          </div>
+        </div>
+        <div class="toolbar">
+          <label><input id="watch" type="checkbox" /> Show what one pigeon sees</label>
+          <span style="flex: 1"></span>
+          <button id="pause" type="button">Pause</button>
+          <button id="reset" type="button">Reset</button>
+        </div>
+      </section>
+
+      <section id="challenge" class="challenge" aria-live="polite">
+        <h2>Challenge: through the arch</h2>
+        <p>
+          Get <strong>30 different pigeons</strong> through Washington Square Arch, heading north,
+          within <strong>2 seconds</strong> of each other. A scattered flock won't do it. You'll
+          need the right rules and a well-placed hawk.
+        </p>
+        <div class="meter"><div id="meter"></div></div>
+        <div class="stats">
+          <span>Through the arch now: <b id="now">0</b> / 30</span>
+          <span>Best: <b id="best">0</b></span>
+          <span>Time: <b id="time">0:00</b></span>
+        </div>
+        <div class="won-msg">You did it in <span id="won-time"></span>. The whole flock is heading up Fifth Ave.</div>
+      </section>
+
+      <h2>What to try</h2>
+      <ul>
+        <li>Set <b>cohesion</b> to 0. Pigeons still line up, but loose groups never merge.</li>
+        <li>Set <b>separation</b> to 0. The flock collapses into tight clumps.</li>
+        <li>Set <b>alignment</b> to 0. Birds bunch together but mill about with no shared direction.</li>
+        <li>Tick "Show what one pigeon sees". The dashed circle is all it knows about; the coloured arrows are its three rules pulling at it.</li>
+      </ul>
+    </main>
+
+    <footer class="wrap">
+      Reynolds, C. W. (1987). <i>Flocks, herds and schools: a distributed behavioral model.</i> SIGGRAPH.
+      · <a href="../../">All explainers</a>
+    </footer>
+
+    <script type="module" src="/src/explainers/boids/main.ts"></script>
+  </body>
+</html>
